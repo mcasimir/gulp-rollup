@@ -11,6 +11,9 @@ npm i --save-dev gulp-rollup
 ## Usage
 
 ``` js
+var gulp   = require('gulp'),
+    rollup = require('gulp-rollup');
+
 gulp.task('bundle', function(){
   gulp.src('src/main.js', {read: false})
   		 .pipe(rollup(options))
