@@ -1,0 +1,32 @@
+{
+  "name": "gulp-rollup",
+  "version": "1.0.0",
+  "description": "gulp plugin for Rollup ES6 module bundler",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mcasimir/gulp-rollup.git"
+  },
+  "keywords": [
+    "gulp",
+    "rollup",
+    "es6"
+  ],
+  "author": "mcasimir (https://github.com/mcasimir)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mcasimir/gulp-rollup/issues"
+  },
+  "homepage": "https://github.com/mcasimir/gulp-rollup",
+  "dependencies": {
+    "gulp-util": "^3.0.6",
+    "rollup": "^0.8.3",
+    "through2": "^2.0.0"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0"
+  }
+}
