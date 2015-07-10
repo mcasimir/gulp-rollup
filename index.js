@@ -13,6 +13,9 @@ var path = require('path'),
   File = gutil.File,
   rollup = require('rollup');
 
+var PLUGIN_NAME = 'gulp-rollup';
+
+
 module.exports = function(options) {
   options = options || {};
 
@@ -23,21 +26,26 @@ module.exports = function(options) {
 
     if (file.isStream()) {
       return pipe.emit('error',
-            new PluginError('gulp-rollup', 'Streaming not supported'));
+            new PluginError(PLUGIN_NAME, 'Streaming not supported'));
     }
 
     options.entry = file.path;
 
     rollup.rollup(options).then(function(bundle){
-      var res = bundle.generate(options);
-      file.contents = new Buffer(res.code);
-      pipe.push(file);
-      callback();
+      try {
+        var res = bundle.generate(options);
+        file.contents = new Buffer(res.code);
+        pipe.push(file);
+        callback();
+      } catch (err) {
+        var ge = new PluginError(PLUGIN_NAME, err.message);
+        pipe.emit('error', ge);
+      }
     }, function(err){
-      console.error(err);
-      pipe.emit('error',
-            new PluginError('gulp-rollup', err));
-      callback(err);
+      var ge = new PluginError(PLUGIN_NAME, err.message);
+      pipe.emit('error', ge);
     });
+  }, function(){
+    this.emit('end');
   });
 };
