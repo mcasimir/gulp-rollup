@@ -2,6 +2,10 @@
 
 Gulp plugin for [Rollup](https://www.npmjs.com/package/rollup) ES6 module bundler.
 
+[![Dependency Status](https://david-dm.org/mcasimir/gulp-rollup.svg)](https://david-dm.org/mcasimir/gulp-rollup)
+
+[![Build Status](https://travis-ci.org/mcasimir/gulp-rollup.svg)](https://travis-ci.org/mcasimir/gulp-rollup)
+
 ## Install
 
 ```
@@ -16,8 +20,8 @@ var gulp   = require('gulp'),
 
 gulp.task('bundle', function(){
   gulp.src('src/main.js', {read: false})
-  		 .pipe(rollup(options))
-  		 .pipe(gulp.dest('dist'));
+    .pipe(rollup(options))
+    .pipe(gulp.dest('dist'));
 });
 ```
 
