@@ -1,0 +1,17 @@
+{
+  "esnext": true,
+  "globalstrict": true,
+  "node": true,
+  "quotmark": "single",
+  "unused": true,
+  "predef": [
+     "describe",
+     "it",
+     "xdescribe",
+     "xit",
+     "expect",
+     "beforeEach",
+     "spyOn",
+     "afterEach"
+   ]
+}

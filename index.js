@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * @usage
  *
@@ -6,26 +8,22 @@
  * 		 .pipe(gulp.dest('dist'));
  */
 
-var path = require('path'),
-  through = require('through2'),
-  gutil = require('gulp-util'),
-  PluginError = gutil.PluginError,
-  File = gutil.File,
-  rollup = require('rollup');
-
-var PLUGIN_NAME = 'gulp-rollup';
-
+var through     = require('through2'),
+    gutil       = require('gulp-util'),
+    PluginError = gutil.PluginError,
+    rollup      = require('rollup'),
+    PLUGIN_NAME = 'gulp-rollup';
 
 module.exports = function(options) {
   options = options || {};
 
   return through.obj(function(file, enc, callback) {
-    var pipe = this;
+    var _this = this;
 
     if (!file.relative) { return; }
 
     if (file.isStream()) {
-      return pipe.emit('error',
+      return _this.emit('error',
             new PluginError(PLUGIN_NAME, 'Streaming not supported'));
     }
 
@@ -35,15 +33,15 @@ module.exports = function(options) {
       try {
         var res = bundle.generate(options);
         file.contents = new Buffer(res.code);
-        pipe.push(file);
+        _this.push(file);
         callback();
       } catch (err) {
         var ge = new PluginError(PLUGIN_NAME, err.message);
-        pipe.emit('error', ge);
+        _this.emit('error', ge);
       }
     }, function(err){
       var ge = new PluginError(PLUGIN_NAME, err.message);
-      pipe.emit('error', ge);
+      _this.emit('error', ge);
     });
   }, function(){
     this.emit('end');

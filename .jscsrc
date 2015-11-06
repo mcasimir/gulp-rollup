@@ -1,0 +1,37 @@
+{
+  "esnext": true,
+  "requireCurlyBraces": ["if", "else", "for", "while", "do", "try", "catch", "default"],
+  "requireSpaceAfterKeywords": ["if", "else", "for", "while", "do", "switch", "return", "try", "catch"],
+  "requireParenthesesAroundIIFE": true,
+  "requireMultipleVarDecl": false,
+  "disallowEmptyBlocks": true,
+  "disallowSpacesInsideObjectBrackets": false,
+  "disallowSpacesInsideArrayBrackets": false,
+  "disallowSpacesInsideParentheses": false,
+  "disallowQuotedKeysInObjects": "allButReserved",
+  "requireCommaBeforeLineBreak": true,
+  "requireOperatorBeforeLineBreak": ["?", "+", "-", "/", "*", "=", "==", "===", "!=", "!==", ">", ">=", "<", "<="],
+  "disallowSpaceAfterPrefixUnaryOperators": ["++", "--", "+", "-", "~", "!"],
+  "disallowSpaceBeforePostfixUnaryOperators": ["++", "--"],
+  "requireSpaceBeforeBinaryOperators": ["+", "-", "/", "*", "=", "==", "===", "!=", "!=="],
+  "requireSpaceAfterBinaryOperators": ["+", "-", "/", "*", "=", "==", "===", "!=", "!=="],
+  "disallowKeywords": ["with"],
+  "disallowMultipleLineBreaks": true,
+  "validateQuoteMarks": "'",
+  "disallowMixedSpacesAndTabs": true,
+  "disallowTrailingWhitespace": true,
+  "disallowKeywordsOnNewLine": ["else"],
+  "requireLineFeedAtFileEnd": false,
+  "requireCapitalizedConstructors": true,
+  "requireDotNotation": true,
+  "validateIndentation": 2,
+  "maxErrors" : 1000000,
+  "safeContextKeyword": "_this",
+  "requireSpaceAfterLineComment": { "allExcept": ["="] },
+
+  "excludeFiles": [
+    "node_modules/**",
+    "bower_components/**",
+    "docs/**"
+  ]
+}
