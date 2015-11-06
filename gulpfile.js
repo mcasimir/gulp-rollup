@@ -1,12 +1,12 @@
 'use strict';
 
-let gulp          = require('gulp-help')(require('gulp'));
-let jasmine       = require('gulp-jasmine');
-let SpecReporter  = require('jasmine-spec-reporter');
-let jshint        = require('gulp-jshint');
-let jscs          = require('gulp-jscs');
-let seq           = require('gulp-sequence');
-let depcheck      = require('gulp-depcheck');
+var gulp          = require('gulp-help')(require('gulp'));
+var jasmine       = require('gulp-jasmine');
+var SpecReporter  = require('jasmine-spec-reporter');
+var jshint        = require('gulp-jshint');
+var jscs          = require('gulp-jscs');
+var seq           = require('gulp-sequence');
+var depcheck      = require('gulp-depcheck');
 
 require('gulp-release-tasks')(gulp);
 
@@ -31,7 +31,7 @@ gulp.task('jshint', function() {
     .pipe(jshint.reporter('fail'));
 });
 
-gulp.task('lint', seq('jshint', 'jscs'));
+gulp.task('lint', seq('jshint', 'jscs', 'lintspaces'));
 
 gulp.task('ci', seq('depcheck', 'lint', 'test'));
 
