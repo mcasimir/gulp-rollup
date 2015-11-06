@@ -31,7 +31,7 @@ gulp.task('jshint', function() {
     .pipe(jshint.reporter('fail'));
 });
 
-gulp.task('lint', seq('jshint', 'jscs', 'lintspaces'));
+gulp.task('lint', seq('jshint', 'jscs'));
 
 gulp.task('ci', seq('depcheck', 'lint', 'test'));
 
