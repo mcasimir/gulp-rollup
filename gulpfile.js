@@ -18,14 +18,14 @@ gulp.task('test', function () {
 });
 
 gulp.task('jscs', function() {
-  return gulp.src(['./src/**/*.js', './test/**/*.js', './*.js'])
+  return gulp.src(['./src/**/*.js', './test/**/*.js', '!./test/fixtures/**/*.js', './*.js'])
     .pipe(jscs())
     .pipe(jscs.reporter())
     .pipe(jscs.reporter('fail'));
 });
 
 gulp.task('jshint', function() {
-  return gulp.src(['./src/**/*.js', './test/**/*.js', './*.js'])
+  return gulp.src(['./src/**/*.js', './test/**/*.js', '!./test/fixtures/**/*.js', './*.js'])
     .pipe(jshint())
     .pipe(jshint.reporter())
     .pipe(jshint.reporter('fail'));
@@ -44,6 +44,7 @@ gulp.task('depcheck', depcheck({
   ignoreDirs: [
     'node_modules',
     'bower_components',
-    'docs'
+    'docs',
+    'fixtures'
   ]
 }));
