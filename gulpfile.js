@@ -35,4 +35,8 @@ gulp.task('lint', seq('jshint', 'jscs'));
 
 gulp.task('ci', seq('depcheck', 'lint', 'test'));
 
-gulp.task('depcheck', depcheck());
+gulp.task('depcheck', depcheck({
+  ignoreDirs: [
+    'fixtures'
+  ]
+}));
