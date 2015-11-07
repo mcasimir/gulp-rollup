@@ -5,11 +5,15 @@ var rollupLib   = require('rollup');
 var es          = require('event-stream');
 var rollup      = require('..');
 
-function fixture(path) {
-  return new gutil.File({
+function fixture(path, base) {
+  var opts = {
     path: __dirname + '/fixtures/' + path,
     contents: null
-  });
+  };
+  if (base !== undefined) {
+    opts.base = __dirname + '/fixtures/' + base;
+  }
+  return new gutil.File(opts);
 }
 
 describe('gulp-rollup', function() {
@@ -91,6 +95,20 @@ describe('gulp-rollup', function() {
     }));
 
     stream.write(fixture('empty.js'));
+    stream.end();
+  });
+
+  it('Should properly handle files with base directories', function(done) {
+    var stream = rollup({
+      format: 'iife'
+    });
+
+    stream.pipe(es.through(function(file) {
+      expect(file.contents.toString().replace(/\n/g, '')).toBe('(function () { \'use strict\';})();');
+      done();
+    }));
+
+    stream.write(fixture('empty.js', ''));
     stream.end();
   });
 });

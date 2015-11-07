@@ -19,41 +19,34 @@ module.exports = function(options) {
   options = options || {};
 
   return through.obj(function(file, enc, callback) {
-    var _this = this;
-
-    if (!file.relative) { return; }
+    if (!file.path) { return; }
 
     if (file.isStream()) {
-      return _this.emit('error',
-        new PluginError(PLUGIN_NAME, 'Streaming not supported'));
+      callback(new PluginError(PLUGIN_NAME, 'Streaming not supported'));
+      return;
     }
 
     try {
-      var stats = fs.lstatSync(file.relative);
+      var stats = fs.lstatSync(file.path);
       if (stats.isFile()) {
         options.entry = file.path;
 
-        rollup.rollup(options).then(function(bundle){
+        rollup.rollup(options).then(function(bundle) {
           try {
             var res = bundle.generate(options);
             file.contents = new Buffer(res.code);
-            _this.push(file);
-            callback();
+            callback(null, file);
           } catch (err) {
-            var ge = new PluginError(PLUGIN_NAME, err.message);
-            _this.emit('error', ge);
+            callback(new PluginError(PLUGIN_NAME, err));
           }
-        }, function(err){
-          var ge = new PluginError(PLUGIN_NAME, err.message);
-          _this.emit('error', ge);
+        }, function(err) {
+          callback(new PluginError(PLUGIN_NAME, err));
         });
       }
+    } catch (err) {
+      callback(new PluginError(PLUGIN_NAME, err));
     }
-    catch (err) {
-      return _this.emit('error',
-        new PluginError(PLUGIN_NAME, err.message));
-    }
-  }, function(){
+  }, function() {
     this.emit('end');
   });
 };
