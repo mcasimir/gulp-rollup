@@ -46,7 +46,7 @@ module.exports = function(options) {
         }, function(err){
           var ge = new PluginError(PLUGIN_NAME, err.message);
           _this.emit('error', ge);
-        });  
+        });
       }
     }
     catch (err) {

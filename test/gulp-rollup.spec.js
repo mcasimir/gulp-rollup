@@ -15,7 +15,7 @@ function fixture(path) {
 describe('gulp-rollup', function() {
   it('Should throw with non existing entry file', function() {
     var stream = rollup();
-    
+
     expect(function() {
       stream.write(fixture('notfound.js'));
     }).toThrowError(/ENOENT/);
@@ -47,7 +47,7 @@ describe('gulp-rollup', function() {
 
     stream.write(fixture('empty.js'));
     stream.end();
-  });  
+  });
 
   it('Should pass options to rollup', function(done) {
     spyOn(rollupLib, 'rollup').and.callThrough();
