@@ -111,4 +111,38 @@ describe('gulp-rollup', function() {
     stream.write(fixture('empty.js', ''));
     stream.end();
   });
+
+  it('Should properly handle multiple passed-in files', function(done) {
+    var stream = rollup();
+
+    var expected = [
+      '',
+      'const C = \'C\';export { C };'
+    ];
+
+    stream.pipe(es.through(function(file) {
+      expect(file.contents.toString().replace(/\n/g, '')).toBe(expected.shift());
+    }, function() {
+      expect(expected.length).toEqual(0);
+      done();
+    }));
+
+    stream.write(fixture('empty.js'));
+    stream.write(fixture('nonempty.js'));
+    stream.end();
+  });
+
+  it('Should emit an error when Rollup fails', function(done) {
+    var stream = rollup();
+
+    stream.on('error', function(error) {
+      done();
+    });
+    stream.on('end', function() {
+      done.fail('The stream ended without emitting an error.');
+    });
+
+    stream.write(fixture('fails.js'));
+    stream.end();
+  });
 });
