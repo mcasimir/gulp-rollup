@@ -35,15 +35,4 @@ gulp.task('lint', seq('jshint', 'jscs'));
 
 gulp.task('ci', seq('depcheck', 'lint', 'test'));
 
-gulp.task('default', () => {
-  return gulp.src('src/app.js')
-    .pipe(gulp.dest('src'));
-});
-
-gulp.task('depcheck', depcheck({
-  ignoreDirs: [
-    'node_modules',
-    'bower_components',
-    'docs'
-  ]
-}));
+gulp.task('depcheck', depcheck());
