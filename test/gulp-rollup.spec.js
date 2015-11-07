@@ -135,7 +135,7 @@ describe('gulp-rollup', function() {
   it('Should emit an error when Rollup fails', function(done) {
     var stream = rollup();
 
-    stream.on('error', function(error) {
+    stream.on('error', function() {
       done();
     });
     stream.on('end', function() {
