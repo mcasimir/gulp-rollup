@@ -31,15 +31,13 @@ module.exports = function(options) {
         options.entry = file.path;
 
         rollup.rollup(options).then(function(bundle) {
-          try {
-            var res = bundle.generate(options);
-            file.contents = new Buffer(res.code);
-            callback(null, file);
-          } catch (err) {
-            callback(new PluginError(PLUGIN_NAME, err));
-          }
+          var res = bundle.generate(options);
+          file.contents = new Buffer(res.code);
+          callback(null, file);
         }, function(err) {
-          callback(new PluginError(PLUGIN_NAME, err));
+          setImmediate(function() {
+            callback(new PluginError(PLUGIN_NAME, err));
+          });
         });
       }
     } catch (err) {
