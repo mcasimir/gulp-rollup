@@ -19,11 +19,10 @@ module.exports = function(options) {
   options = options || {};
 
   return through.obj(function(file, enc, callback) {
-    if (!file.path) { return; }
+    if (!file.path) { return callback(); }
 
     if (file.isStream()) {
-      callback(new PluginError(PLUGIN_NAME, 'Streaming not supported'));
-      return;
+      return callback(new PluginError(PLUGIN_NAME, 'Streaming not supported'));
     }
 
     try {
