@@ -38,9 +38,9 @@ module.exports = function(options) {
           if (map) {
             // This makes sure the paths in the generated source map (file and
             // sources) are relative to file.base:
-            map.file = file.relative;
-            map.sources = map.sources.map(function (fileName) {
-              return path.relative(file.base, fileName);
+            map.file = unixStylePath(file.relative);
+            map.sources = map.sources.map(function(fileName) {
+              return unixStylePath(path.relative(file.base, fileName));
             });
             file.sourceMap = map;
           }
@@ -58,3 +58,7 @@ module.exports = function(options) {
     this.emit('end');
   });
 };
+
+function unixStylePath(filePath) {
+  return filePath.split(path.sep).join('/');
+}
