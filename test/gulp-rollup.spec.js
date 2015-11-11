@@ -112,6 +112,21 @@ describe('gulp-rollup', function() {
     stream.end();
   });
 
+  it('Should properly attach a source map', function(done) {
+    var stream = rollup({
+      format: 'iife',
+      sourceMap: true
+    });
+
+    stream.pipe(es.through(function(file) {
+      expect(file.sourceMap.version).toBeDefined();
+      done();
+    }));
+
+    stream.write(fixture('empty.js', ''));
+    stream.end();
+  });
+
   it('Should properly handle multiple passed-in files', function(done) {
     var stream = rollup();
 

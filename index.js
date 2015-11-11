@@ -12,6 +12,7 @@ var through     = require('through2'),
     gutil       = require('gulp-util'),
     PluginError = gutil.PluginError,
     fs          = require('fs'),
+    path        = require('path'),
     rollup      = require('rollup'),
     PLUGIN_NAME = 'gulp-rollup';
 
@@ -33,6 +34,16 @@ module.exports = function(options) {
         rollup.rollup(options).then(function(bundle) {
           var res = bundle.generate(options);
           file.contents = new Buffer(res.code);
+          var map = res.map;
+          if (map) {
+            // This makes sure the paths in the generated source map (file and
+            // sources) are relative to file.base:
+            map.file = file.relative;
+            map.sources = map.sources.map(function (fileName) {
+              return path.relative(file.base, fileName);
+            });
+            file.sourceMap = map;
+          }
           callback(null, file);
         }, function(err) {
           setImmediate(function() {
