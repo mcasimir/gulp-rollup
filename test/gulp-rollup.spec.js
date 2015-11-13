@@ -1,28 +1,35 @@
 'use strict';
 
+var fs          = require('fs');
 var gutil       = require('gulp-util');
 var rollupLib   = require('rollup');
 var es          = require('event-stream');
 var rollup      = require('..');
 
+var files = {
+  'empty.js': fs.readFileSync(__dirname + '/fixtures/empty.js'),
+  'fails.js': fs.readFileSync(__dirname + '/fixtures/fails.js'),
+  'nonempty.js': fs.readFileSync(__dirname + '/fixtures/nonempty.js')
+};
+
 function fixture(path, base) {
   var opts = {
     path: __dirname + '/fixtures/' + path,
-    contents: null
+    contents: files[path] || null
   };
-  if (base !== undefined) {
+  if (!base) {
     opts.base = __dirname + '/fixtures/' + base;
   }
   return new gutil.File(opts);
 }
 
 describe('gulp-rollup', function() {
-  it('Should throw with non existing entry file', function() {
+  it('Shouldn\'t throw with non existing entry file', function() {
     var stream = rollup();
 
     expect(function() {
       stream.write(fixture('notfound.js'));
-    }).toThrowError(/ENOENT/);
+    }).not.toThrow(/ENOENT/);
 
     stream.end();
   });
@@ -31,8 +38,8 @@ describe('gulp-rollup', function() {
     spyOn(rollupLib, 'rollup').and.callThrough();
     var stream = rollup();
 
-    stream.pipe(es.through(function() {
-      expect(rollupLib.rollup).toHaveBeenCalledWith({ entry: fixture('empty.js').path });
+    stream.pipe(es.through(function(file) {
+      expect(file.path).toEqual(fixture('empty.js').path);
       done();
     }));
 
@@ -40,12 +47,12 @@ describe('gulp-rollup', function() {
     stream.end();
   });
 
-  it('Should override entry option', function(done) {
+  it('Shouldn\'t override entry option', function(done) {
     spyOn(rollupLib, 'rollup').and.callThrough();
     var stream = rollup({entry: 'overridden.js'});
 
-    stream.pipe(es.through(function() {
-      expect(rollupLib.rollup).toHaveBeenCalledWith({ entry: fixture('empty.js').path });
+    stream.pipe(es.through(function(file) {
+      expect(file.path).toEqual(fixture('empty.js').path);
       done();
     }));
 
