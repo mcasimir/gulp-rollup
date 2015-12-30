@@ -1,6 +1,6 @@
 {
   "name": "gulp-rollup",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "gulp plugin for Rollup ES6 module bundler",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,7 @@
   "homepage": "https://github.com/mcasimir/gulp-rollup",
   "dependencies": {
     "gulp-util": "^3.0.6",
-    "rollup": "^0.21.0",
+    "rollup": "^0.22.2",
     "through2": "^2.0.0"
   },
   "devDependencies": {
@@ -34,9 +34,10 @@
     "gulp-help": "^1.6.1",
     "gulp-jasmine": "^2.2.0",
     "gulp-jscs": "^3.0.2",
-    "gulp-jshint": "^1.12.0",
+    "gulp-jshint": "^2.0.0",
     "gulp-release-tasks": "0.0.3",
     "gulp-sequence": "^0.4.1",
-    "jasmine-spec-reporter": "^2.4.0"
+    "jasmine-spec-reporter": "^2.4.0",
+    "jshint": "^2.8.0"
   }
 }
