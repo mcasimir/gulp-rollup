@@ -76,7 +76,7 @@ describe('gulp-rollup', function() {
     });
 
     stream.pipe(es.through(function(file) {
-      expect(file.contents.toString().replace(/\n/g, '')).toBe('(function () { \'use strict\';})();');
+      expect(file.contents.toString().replace(/\n/g, '')).toMatch(/\(function \(\) {\s'use strict';}\(\)\);/);
       done();
     }));
 
@@ -104,7 +104,7 @@ describe('gulp-rollup', function() {
     });
 
     stream.pipe(es.through(function(file) {
-      expect(file.contents.toString().replace(/\n/g, '')).toBe('(function () { \'use strict\';})();');
+      expect(file.contents.toString().replace(/\n/g, '')).toMatch(/\(function \(\) {\s'use strict';}\(\)\);/);
       done();
     }));
 

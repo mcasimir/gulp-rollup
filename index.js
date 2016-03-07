@@ -31,7 +31,7 @@ module.exports = function(options) {
         options.entry = file.path;
 
         var rollup = options.rollup || require('rollup');
-        if(options.rollup) {
+        if (options.rollup) {
           delete options.rollup;
         }
 
