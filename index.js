@@ -13,7 +13,6 @@ var through     = require('through2'),
     PluginError = gutil.PluginError,
     fs          = require('fs'),
     path        = require('path'),
-    rollup      = require('rollup'),
     PLUGIN_NAME = 'gulp-rollup';
 
 module.exports = function(options) {
@@ -30,6 +29,11 @@ module.exports = function(options) {
       var stats = fs.lstatSync(file.path);
       if (stats.isFile()) {
         options.entry = file.path;
+
+        var rollup = options.rollup || require('rollup');
+        if (options.rollup) {
+          delete options.rollup;
+        }
 
         rollup.rollup(options).then(function(bundle) {
           var res = bundle.generate(options);
