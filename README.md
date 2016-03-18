@@ -1,6 +1,6 @@
 # gulp-rollup [![npm][npm-image]][npm-url] [![Dependency Status][david-image]][david-url] [![Build Status][travis-image]][travis-url]
 
-Gulp plugin for [Rollup](https://www.npmjs.com/package/rollup) ES6 module bundler.
+Gulp plugin for the [Rollup](https://www.npmjs.com/package/rollup) ES6 module bundler.
 
 ## Install
 
@@ -18,7 +18,7 @@ var gulp       = require('gulp'),
 gulp.task('bundle', function(){
   gulp.src('src/main.js', {read: false})
     .pipe(rollup({
-        // any option supported by rollup can be set here, including sourceMap
+        // any option supported by Rollup can be set here, including sourceMap
         sourceMap: true
     }))
     .pipe(sourcemaps.write(".")) // this only works if the sourceMap option is true
@@ -26,7 +26,17 @@ gulp.task('bundle', function(){
 });
 ```
 
-Refer to [Rollup docs](https://www.npmjs.com/package/rollup) for a list of valid options.
+In addition to [the standard Rollup options](https://github.com/rollup/rollup/wiki/JavaScript-API),
+gulp-rollup supports `options.rollup`, allowing you to use an older, newer, or
+custom version of Rollup by passing in the module like so:
+
+``` js
+gulp.src('src/main.js', {read: false})
+  .pipe(rollup({
+      rollup: require('rollup')
+  }))
+  //...
+```
 
 [npm-url]: https://npmjs.org/package/gulp-rollup
 [npm-image]: https://img.shields.io/npm/v/gulp-rollup.svg
