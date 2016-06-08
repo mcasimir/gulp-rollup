@@ -12,7 +12,7 @@ var pretty    = new (require('pretty-error'))();
 
 describe('gulp-rollup', function() {
 
-  it('should return "console.log(this)"', function(done) {
+  it('should return same content.', function(done) {
 
     var content = 'console.log(this)';
 
@@ -92,8 +92,7 @@ describe('gulp-rollup', function() {
   it('Should emit an error when Rollup fails', function(done) {
     var stream = rollup();
 
-    stream.on('error', function(e) {
-      console.log(pretty.render(e));
+    stream.on('error', function() {
       done();
     });
 
