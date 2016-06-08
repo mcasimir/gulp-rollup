@@ -5,7 +5,8 @@ Gulp plugin for the [Rollup](https://www.npmjs.com/package/rollup) ES6 module bu
 ## Install
 
 ```
-npm i --save-dev gulp-rollup
+npm i -D rollup
+npm i -D gulp-rollup
 ```
 
 ## Usage

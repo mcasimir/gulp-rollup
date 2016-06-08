@@ -1,121 +1,52 @@
 'use strict';
 
-var gutil       = require('gulp-util');
-var rollupLib   = require('rollup');
-var es          = require('event-stream');
-var rollup      = require('..');
+var fs        = require('fs');
+var path      = require('path');
+var gutil     = require('gulp-util');
+var es        = require('event-stream');
+var assert    = require('assert');
+var rollup    = require('..');
+var Vinyl     = gutil.File;
+var pretty    = new (require('pretty-error'))();
 
-function fixture(path, base) {
-  var opts = {
-    path: __dirname + '/fixtures/' + path,
-    contents: null
-  };
-  if (base !== undefined) {
-    opts.base = __dirname + '/fixtures/' + base;
-  }
-  return new gutil.File(opts);
-}
 
 describe('gulp-rollup', function() {
-  it('Should throw with non existing entry file', function() {
+
+  it('should return same content.', function(done) {
+
+    var content = 'console.log(this)';
+
     var stream = rollup();
 
-    expect(function() {
-      stream.write(fixture('notfound.js'));
-    }).toThrowError(/ENOENT/);
-
-    stream.end();
-  });
-
-  it('Should pass source as entry to rollup', function(done) {
-    spyOn(rollupLib, 'rollup').and.callThrough();
-    var stream = rollup();
-
-    stream.pipe(es.through(function() {
-      expect(rollupLib.rollup).toHaveBeenCalledWith({ entry: fixture('empty.js').path });
+    stream.once('data', function(file) {
+      assert.equal(file.contents.toString(), content);
       done();
-    }));
-
-    stream.write(fixture('empty.js'));
-    stream.end();
-  });
-
-  it('Should override entry option', function(done) {
-    spyOn(rollupLib, 'rollup').and.callThrough();
-    var stream = rollup({entry: 'overridden.js'});
-
-    stream.pipe(es.through(function() {
-      expect(rollupLib.rollup).toHaveBeenCalledWith({ entry: fixture('empty.js').path });
-      done();
-    }));
-
-    stream.write(fixture('empty.js'));
-    stream.end();
-  });
-
-  it('Should pass options to rollup', function(done) {
-    spyOn(rollupLib, 'rollup').and.callThrough();
-    var options = {
-      format: 'amd'
-    };
-
-    var stream = rollup(options);
-
-    stream.pipe(es.through(function() {
-      expect(rollupLib.rollup).toHaveBeenCalledWith(options);
-      done();
-    }));
-
-    stream.write(fixture('empty.js'));
-    stream.end();
-  });
-
-  it('Should invoke bundle.generate with options - 1', function(done) {
-    var stream = rollup({
-      format: 'iife'
     });
 
-    stream.pipe(es.through(function(file) {
-      expect(file.contents.toString().replace(/\n/g, '')).toMatch(/\(function \(\) {\s'use strict';}\(\)\);/);
-      done();
-    }));
-
-    stream.write(fixture('empty.js'));
-    stream.end();
-  });
-
-  it('Should invoke bundle.generate with options - 2', function(done) {
-    var stream = rollup({
-      format: 'amd'
+    stream.on('error', function (e) {
+      console.log(pretty.render(e));
     });
 
-    stream.pipe(es.through(function(file) {
-      expect(file.contents.toString().replace(/\n/g, '')).toBe('define(function () { \'use strict\';});');
-      done();
+    stream.write(new Vinyl({
+      path: 'src/fake.js',
+      contents: new Buffer(content)
     }));
 
-    stream.write(fixture('empty.js'));
     stream.end();
+
   });
 
-  it('Should properly handle files with base directories', function(done) {
-    var stream = rollup({
-      format: 'iife'
-    });
-
-    stream.pipe(es.through(function(file) {
-      expect(file.contents.toString().replace(/\n/g, '')).toMatch(/\(function \(\) {\s'use strict';}\(\)\);/);
-      done();
-    }));
-
-    stream.write(fixture('empty.js', ''));
-    stream.end();
-  });
 
   it('Should properly attach a source map', function(done) {
+
+    var file = getFile('./fixtures/nonempty.js');
+
     var stream = rollup({
-      format: 'iife',
       sourceMap: true
+    });
+
+    stream.on('error', function (e) {
+      console.log(pretty.render(e));
     });
 
     stream.pipe(es.through(function(file) {
@@ -123,17 +54,26 @@ describe('gulp-rollup', function() {
       done();
     }));
 
-    stream.write(fixture('empty.js', ''));
+    stream.write(file);
+
     stream.end();
+
   });
 
+
   it('Should properly handle multiple passed-in files', function(done) {
+
     var stream = rollup();
 
     var expected = [
       '',
       'const C = \'C\';export { C };'
     ];
+
+
+    stream.on('error', function (e) {
+      console.log(pretty.render(e));
+    });
 
     stream.pipe(es.through(function(file) {
       expect(file.contents.toString().replace(/\n/g, '')).toBe(expected.shift());
@@ -142,10 +82,12 @@ describe('gulp-rollup', function() {
       done();
     }));
 
-    stream.write(fixture('empty.js'));
-    stream.write(fixture('nonempty.js'));
+    stream.write(getFile('./fixtures/empty.js'));
+    stream.write(getFile('./fixtures/nonempty.js'));
     stream.end();
+
   });
+
 
   it('Should emit an error when Rollup fails', function(done) {
     var stream = rollup();
@@ -153,11 +95,33 @@ describe('gulp-rollup', function() {
     stream.on('error', function() {
       done();
     });
+
     stream.on('end', function() {
       done.fail('The stream ended without emitting an error.');
     });
 
-    stream.write(fixture('fails.js'));
+    stream.write(getFile('fixtures/fails.js'));
     stream.end();
+
   });
+
+
 });
+
+
+/**
+ * @param {string} filePath The path of the file²
+ * @return {Vinyl} A Vinyl file
+ */
+function getFile(filePath) {
+
+  filePath = path.isAbsolute(filePath) ?
+             filePath :
+             path.resolve(__dirname, filePath);
+
+  return new Vinyl({
+    path: filePath,
+    contents: new Buffer(fs.readFileSync(filePath))
+  });
+
+}
