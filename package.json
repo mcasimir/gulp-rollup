@@ -24,7 +24,6 @@
   "homepage": "https://github.com/mcasimir/gulp-rollup",
   "dependencies": {
     "gulp-util": "^3.0.7",
-    "rollup": "^0.26.7",
     "rollup-plugin-vinyl": "^0.1.0",
     "through2": "^2.0.1"
   },
@@ -40,6 +39,7 @@
     "gulp-sequence": "^0.4.5",
     "jasmine-spec-reporter": "^2.4.0",
     "jshint": "^2.9.2",
-    "pretty-error": "^2.0.0"
+    "pretty-error": "^2.0.0",
+    "rollup": "^0.26.7"
   }
 }
