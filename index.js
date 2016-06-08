@@ -14,7 +14,7 @@ module.exports = gulpRollup;
 
 
 /**
- * Rollup plugin for gulp
+ * Rollup plugin for gulp.
  *
  * @example
  *   gulp.src('app.js', {read: false})
