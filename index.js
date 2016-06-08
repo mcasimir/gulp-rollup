@@ -7,7 +7,7 @@ var path        = require('path'),
     rollup      = require('rollup'),
     PLUGIN_NAME = 'gulp-rollup',
     PluginError = gutil.PluginError,
-    Plugin      = require('./lib/Plugin')
+    Plugin      = require('rollup-plugin-vinyl')
 ;
 
 module.exports = gulpRollup;
