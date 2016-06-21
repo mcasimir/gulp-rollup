@@ -39,6 +39,7 @@
     "gulp-sequence": "^0.4.1",
     "jasmine-spec-reporter": "^2.4.0",
     "jshint": "^2.8.0",
-    "rollup-plugin-string": "^2.0.0"
+    "rollup-plugin-string": "^2.0.0",
+    "vinyl": "^1.1.1"
   }
 }
