@@ -64,7 +64,7 @@ function GulpRollup(options) {
     // now let's see if this is an entry file.
     entryFiles = entryFiles.then(function(entryFiles) {
       entryFiles.forEach(function(entryFile, i) {
-        if (!entries[i] && finder.resolveId(entryFile)) {
+        if (finder.resolveId(entryFile)) {
           entries[i] = file;
         }
       });
