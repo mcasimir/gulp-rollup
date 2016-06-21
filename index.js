@@ -61,11 +61,13 @@ function GulpRollup(options) {
 
       if (!adjustedOptions.plugins) {
         adjustedOptions.plugins = [];
+      } else if (!Array.isArray(adjustedOptions.plugins)) {
+        adjustedOptions.plugins = [adjustedOptions.plugins];
       }
-      adjustedOptions.plugins = [hypothetical({
+      adjustedOptions.plugins = adjustedOptions.plugins.concat(hypothetical({
         files: wonderland,
         allowRealFiles: options.allowRealFiles
-      })].concat(adjustedOptions.plugins);
+      }));
 
       rollup.rollup(adjustedOptions).then(function(bundle) {
         adjustedOptions.sourceMap = haveSourcemaps;

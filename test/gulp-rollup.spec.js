@@ -1,8 +1,11 @@
 'use strict';
 
-var rollup      = require('..');
-var File        = require('vinyl');
-var Readable    = require('readable-stream');
+var rollup       = require('..');
+var File         = require('vinyl');
+var Readable     = require('readable-stream').Readable;
+var path         = require('path');
+var string       = require('rollup-plugin-string');
+var hypothetical = require('rollup-plugin-hypothetical');
 
 function assertLength1(files) {
   if (files.length !== 1) {
@@ -62,15 +65,19 @@ function execute(stream, expected) {
     }
     for (key in object) {
       if (!(key in expected)) {
-        throw new Error('Didn\'t expect object to have key "'+key+'"!');
+        throw new Error('Didn\'t expect object to have key "' + key + '"!');
       }
     }
   });
 }
 
+function resolve(p) {
+  return path.resolve(__dirname, p);
+}
+
 describe('gulp-rollup', function() {
   describe('Errors', function() {
-    it('Should error when passed no options', function(done) {
+    it('should be thrown when passed no options', function(done) {
       var stream = rollup();
 
       expectError(/options\.entry/, stream).then(done, done.fail);
@@ -78,7 +85,7 @@ describe('gulp-rollup', function() {
       stream.end();
     });
 
-    it('Should error when passed no options.entry', function(done) {
+    it('should be thrown when passed no options.entry', function(done) {
       var stream = rollup({});
 
       expectError(/options\.entry/, stream).then(done, done.fail);
@@ -86,7 +93,7 @@ describe('gulp-rollup', function() {
       stream.end();
     });
 
-    it('Should error when passed no files', function(done) {
+    it('should be thrown when passed no files', function(done) {
       var stream = rollup({ entry: '/x' });
 
       expectError(/does not exist/, stream).then(done, done.fail);
@@ -94,7 +101,7 @@ describe('gulp-rollup', function() {
       stream.end();
     });
 
-    it('Should error when the entry does not exist', function(done) {
+    it('should be thrown when the entry does not exist', function(done) {
       var stream = rollup({ entry: '/x' });
 
       expectError(/does not exist/, stream).then(done, done.fail);
@@ -106,7 +113,7 @@ describe('gulp-rollup', function() {
       stream.end();
     });
 
-    it('Should error when given null files', function(done) {
+    it('should be thrown when given null files', function(done) {
       var stream = rollup({ entry: '/x' });
 
       expectError(/buffer/i, stream).then(done, done.fail);
@@ -117,7 +124,7 @@ describe('gulp-rollup', function() {
       stream.end();
     });
 
-    it('Should error when given streamed files', function(done) {
+    it('should be thrown when given streamed files', function(done) {
       var stream = rollup({ entry: '/x' });
 
       expectError(/buffer/i, stream).then(done, done.fail);
@@ -129,7 +136,7 @@ describe('gulp-rollup', function() {
       stream.end();
     });
 
-    it('Should error when given mixed mapped and non-mapped files', function(done) {
+    it('should be thrown when given mixed mapped and non-mapped files', function(done) {
       var stream = rollup({ entry: '/x' });
 
       expectError(/sourcemap/i, stream).then(done, done.fail);
@@ -148,7 +155,7 @@ describe('gulp-rollup', function() {
     });
   });
 
-  it('Should simulate the entry file', function(done) {
+  it('should simulate an entry file', function(done) {
     var stream = rollup({ entry: '/x' });
 
     execute(stream, { key: 5 }).then(done, done.fail);
@@ -160,7 +167,7 @@ describe('gulp-rollup', function() {
     stream.end();
   });
 
-  it('Should simulate imported files', function(done) {
+  it('should simulate imported files', function(done) {
     var stream = rollup({ entry: '/x' });
 
     execute(stream, { key: 5, key2: 6, key3: 'a' }).then(done, done.fail);
@@ -180,7 +187,7 @@ describe('gulp-rollup', function() {
     stream.end();
   });
 
-  it('Should handle out-of-order files', function(done) {
+  it('should handle out-of-order files', function(done) {
     var stream = rollup({ entry: '/x' });
 
     execute(stream, { key: 5, key2: 6, key3: 'a' }).then(done, done.fail);
@@ -200,7 +207,7 @@ describe('gulp-rollup', function() {
     stream.end();
   });
 
-  it('Should reuse the entry file object for output', function(done) {
+  it('should reuse the entry file object for output', function(done) {
     var stream = rollup({ entry: '/x' });
 
     var entry = new File({
@@ -223,6 +230,170 @@ describe('gulp-rollup', function() {
     stream.write(new File({
       path: '/y',
       contents: new Buffer('import "./z"; object.key2 = 6')
+    }));
+    stream.end();
+  });
+
+  it('should not add a sourcemap if the input lacks them', function(done) {
+    var stream = rollup({ entry: '/x' });
+
+    wrap(stream).then(function(files) {
+      assertLength1(files);
+      if (files[0].sourceMap !== undefined) {
+        throw new Error('Output has a sourcemap attachment!');
+      }
+    }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('object.key = 5')
+    }));
+    stream.end();
+  });
+
+  it('should replace the sourcemap if the input has them', function(done) {
+    var stream = rollup({ entry: '/x' });
+
+    var x = new File({
+      path: '/x',
+      contents: new Buffer('import "./y"; object.key = 5')
+    });
+    var map = x.sourceMap = { mappings: '' };
+    var y = new File({
+      path: '/y',
+      contents: new Buffer('object.key2 = 6')
+    });
+    y.sourceMap = { mappings: '' };
+
+    wrap(stream).then(function(files) {
+      assertLength1(files);
+      if (files[0].sourceMap === undefined) {
+        throw new Error('Output has no sourcemap attachment!');
+      }
+      if (files[0].sourceMap === map) {
+        throw new Error('The original sourcemap was left in place!');
+      }
+    }).then(done, done.fail);
+
+    stream.write(y);
+    stream.write(x);
+    stream.end();
+  });
+
+  it('shouldn\'t break with a custom Rollup', function(done) {
+    var stream = rollup({ rollup: require('rollup'), entry: '/x' });
+
+    execute(stream, { key: 5 }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('object.key = 5')
+    }));
+    stream.end();
+  });
+
+  it('should use a custom Rollup', function(done) {
+    var stream = rollup({
+      rollup: {
+        rollup: function(options) {
+          if (options.entry !== 'en-tree?') {
+            throw new Error('Correct options were not passed to rollup()!');
+          }
+          return Promise.resolve({
+            generate: function(options) {
+              if (options.entry !== 'en-tree?') {
+                throw new Error('Correct options were not passed to generate()!');
+              }
+              return { code: 'ephemeral style' };
+            }
+          });
+        }
+      },
+      entry: 'en-tree?'
+    });
+
+    wrap(stream).then(function(files) {
+      assertLength1(files);
+      if (files[0].contents.toString() !== 'ephemeral style') {
+        throw new Error('Output expected from custom Rollup was not received!');
+      }
+    }).then(done, done.fail);
+
+    stream.end();
+  });
+
+  it('should forbid real files by default', function(done) {
+    var stream = rollup({ entry: resolve('x') });
+
+    expectError(/does not exist/, stream).then(done, done.fail);
+
+    stream.write(new File({
+      path: resolve('x'),
+      contents: new Buffer('import "./fixures/a.js"; object.key = 5')
+    }));
+    stream.end();
+  });
+
+  it('should allow real files when options.allowRealFiles is true', function(done) {
+    var stream = rollup({ entry: resolve('x'), allowRealFiles: true });
+
+    execute(stream, { key: 5, key4: 'value' }).then(done, done.fail);
+
+    stream.write(new File({
+      path: resolve('x'),
+      contents: new Buffer('import "./fixtures/a.js"; object.key = 5')
+    }));
+    stream.end();
+  });
+
+  it('should allow a real file as the entry when options.allowRealFiles is true', function(done) {
+    var stream = rollup({ entry: resolve('./fixtures/b.js'), allowRealFiles: true });
+
+    execute(stream, { key: 5, key5: 'eulav' }).then(done, done.fail);
+
+    stream.write(new File({
+      path: resolve('x'),
+      contents: new Buffer('object.key = 5')
+    }));
+    stream.end();
+  });
+
+  it('shouldn\'t interfere with transformer plugins', function(done) {
+    var stream = rollup({
+      entry: '/x',
+      plugins: string({ include: '/y' })
+    });
+
+    execute(stream, { key: 'hey' }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('import hey from "./y"; object.key = hey')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('hey')
+    }));
+    stream.end();
+  });
+
+  it('shouldn\'t interfere with resolver/loader plugins', function(done) {
+    var stream = rollup({
+      entry: '/x',
+      plugins: hypothetical({
+        files: {
+          'where shall we have lunch?': 'object.key6 = "Milliways"'
+        },
+        allowRealFiles: true,
+        leaveIdsAlone: true
+      })
+    });
+
+    execute(stream, { key: 5, key6: 'Milliways' }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('import "where shall we have lunch?"; object.key = 5')
     }));
     stream.end();
   });
