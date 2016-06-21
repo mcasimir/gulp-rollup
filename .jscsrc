@@ -4,7 +4,7 @@
   "requireSpaceAfterKeywords": ["if", "else", "for", "while", "do", "switch", "return", "try", "catch"],
   "requireParenthesesAroundIIFE": true,
   "requireMultipleVarDecl": false,
-  "disallowEmptyBlocks": true,
+  "disallowEmptyBlocks": false,
   "disallowSpacesInsideObjectBrackets": false,
   "disallowSpacesInsideArrayBrackets": false,
   "disallowSpacesInsideParentheses": false,

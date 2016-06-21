@@ -4,6 +4,8 @@
   "node": true,
   "quotmark": "single",
   "unused": true,
+  "eqnull": true,
+  "evil": true,
   "predef": [
      "describe",
      "it",
