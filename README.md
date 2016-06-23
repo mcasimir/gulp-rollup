@@ -46,7 +46,13 @@ gulp.task('bundle', function() {
 });
 ```
 
-# Options
+## Multiple entry points
+
+If an array of strings is passed into `options.entry`, a separate bundle will be rolled up from each entry point. They will be processed in parallel and output in no particular order. As usual, each bundle will have the same path as the associated entry file.
+
+In addition, a Promise that resolves to a string or array of strings can be passed into `options.entry`. This is to make it more convenient to use asynchronous methods to locate entry files.
+
+## Options
 
 In addition to [the standard Rollup options](https://github.com/rollup/rollup/wiki/JavaScript-API), gulp-rollup supports `options.rollup`, allowing you to use an older, newer, or custom version of Rollup by passing in the module like so:
 

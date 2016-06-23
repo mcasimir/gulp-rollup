@@ -50,22 +50,53 @@ function wrap(stream) {
 }
 
 function execute(stream, expected) {
+  return executeAll(stream, { '': expected });
+}
+
+function executeAll(stream, expected) {
   return wrap(stream).then(function(files) {
-    assertLength1(files);
-    var object = {};
-    (new Function('object', files[0].contents.toString()))(object);
-    for (var key in expected) {
-      if (!(key in object)) {
-        throw new Error('Expected object to have key "' + key + '"!');
-      }
-      var ok = JSON.stringify(object[key]), ek = JSON.stringify(expected[key]);
-      if (ok !== ek)  {
-        throw new Error('Expected object.' + key + ' to be ' + ek + ', not ' + ok + '!');
-      }
+    var keys = Object.keys(expected);
+
+    if (keys.length === 1) {
+      assertLength1(files);
+    } else if (files.length !== keys.length) {
+      throw new Error('Expected ' + keys.length + ' files, not ' + files.length + '!');
     }
-    for (key in object) {
-      if (!(key in expected)) {
-        throw new Error('Didn\'t expect object to have key "' + key + '"!');
+
+    var done = [];
+
+    for (var i = 0; i < files.length; ++i) {
+      var expectedItem;
+      if (keys.length === 1 && keys[0] === '') {
+        expectedItem = expected[''];
+      } else {
+        expectedItem = expected[files[i].path];
+        if (!expectedItem) {
+          throw new Error('Unexpected file path ' + files[i].path + '!');
+        }
+        if (done.indexOf(files[i].path) !== -1) {
+          throw new Error('Duplicate file path ' + files[i].path + '!');
+        }
+        done.push(files[i].path);
+      }
+
+      var object = {};
+      (new Function('object', files[i].contents.toString()))(object);
+
+      for (var key in expectedItem) {
+        if (!(key in object)) {
+          throw new Error('Expected object to have key "' + key + '"!');
+        }
+        var ok = JSON.stringify(object[key]), ek = JSON.stringify(expectedItem[key]);
+        if (ok !== ek)  {
+          throw new Error('Expected object.' + key + ' to be ' + ek + ', not ' + ok + '!');
+        }
+      }
+
+      for (key in object) {
+        if (!(key in expectedItem)) {
+          throw new Error('Didn\'t expect object to have key "' + key + '"!');
+        }
       }
     }
   });
@@ -394,6 +425,109 @@ describe('gulp-rollup', function() {
     stream.write(new File({
       path: '/x',
       contents: new Buffer('import "where shall we have lunch?"; object.key = 5')
+    }));
+    stream.end();
+  });
+
+  it('should accept multiple entries', function(done) {
+    var stream = rollup({ entry: ['/x', '/y'] });
+
+    executeAll(stream, {
+      '/x': { key: 5 },
+      '/y': { key2: 6 }
+    }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('object.key = 5')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('object.key2 = 6')
+    }));
+    stream.end();
+  });
+
+  it('should roll up multiple entries', function(done) {
+    var stream = rollup({ entry: ['/z', '/x'] });
+
+    executeAll(stream, {
+      '/x': { key2: 6, key3: 7, key: 5 },
+      '/z': { key2: 6, key3: 7 }
+    }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('import "./y"; import "./z"; object.key = 5')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('object.key2 = 6')
+    }));
+    stream.write(new File({
+      path: '/z',
+      contents: new Buffer('import "./y"; object.key3 = 7')
+    }));
+    stream.end();
+  });
+
+  it('should accept a Promise as an entry', function(done) {
+    var stream = rollup({ entry: Promise.resolve('/x') });
+
+    execute(stream, { key: 5 }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('object.key = 5')
+    }));
+    stream.end();
+  });
+
+  it('should accept multiple entries', function(done) {
+    var stream = rollup({ entry: Promise.resolve(['/x', '/y']) });
+
+    executeAll(stream, {
+      '/x': { key: 5 },
+      '/y': { key2: 6 }
+    }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('object.key = 5')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('object.key2 = 6')
+    }));
+    stream.end();
+  });
+
+  it('should accept a Promise that takes a while to resolve as an entry', function(done) {
+    var stream = rollup({
+      entry: new Promise(function(resolve) {
+        setTimeout(function() {
+          resolve('/x');
+        }, 500);
+      })
+    });
+
+    execute(stream, { key: 5 }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('object.key = 5')
+    }));
+    stream.end();
+  });
+
+  it('should pass on errors from the entry Promise', function(done) {
+    var stream = rollup({ entry: Promise.reject(new Error('oh NOOOOOO')) });
+
+    expectError(/oh NOOOOOO/, stream).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('object.key = 5')
     }));
     stream.end();
   });
