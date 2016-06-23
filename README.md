@@ -46,7 +46,7 @@ gulp.task('bundle', function() {
 });
 ```
 
-# Options
+## Options
 
 In addition to [the standard Rollup options](https://github.com/rollup/rollup/wiki/JavaScript-API), gulp-rollup supports `options.rollup`, allowing you to use an older, newer, or custom version of Rollup by passing in the module like so:
 
