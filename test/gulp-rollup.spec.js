@@ -519,4 +519,16 @@ describe('gulp-rollup', function() {
     }));
     stream.end();
   });
+
+  it('should pass on errors from the entry Promise', function(done) {
+    var stream = rollup({ entry: Promise.reject(new Error('oh NOOOOOO')) });
+
+    expectError(/oh NOOOOOO/, stream).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('object.key = 5')
+    }));
+    stream.end();
+  });
 });
