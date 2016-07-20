@@ -531,4 +531,52 @@ describe('gulp-rollup', function() {
     }));
     stream.end();
   });
+
+  it('should add a .js extension if necessary by default', function(done) {
+    var stream = rollup({
+      entry: '/x'
+    });
+
+    execute(stream, { key: 5 }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x.js',
+      contents: new Buffer('object.key = 5')
+    }));
+    stream.end();
+  });
+
+  it('should add extensions in options.impliedExtensions if necessary', function(done) {
+    var stream = rollup({
+      entry: '/x',
+      impliedExtensions: ['.lol', '.ha']
+    });
+
+    execute(stream, { key: 5, key2: true }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x.lol',
+      contents: new Buffer('import \'./y\'; object.key = 5')
+    }));
+    stream.write(new File({
+      path: '/y.ha',
+      contents: new Buffer('object.key2 = true')
+    }));
+    stream.end();
+  });
+
+  it('shouldn\'t add any extensions if options.impliedExtensions is false', function(done) {
+    var stream = rollup({
+      entry: '/x',
+      impliedExtensions: false
+    });
+
+    expectError(/does not exist in the hypothetical file system/, stream).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x.js',
+      contents: new Buffer('object.key = 5')
+    }));
+    stream.end();
+  });
 });

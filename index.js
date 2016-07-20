@@ -15,10 +15,20 @@ function GulpRollup(options) {
 
   Transform.call(self, { objectMode: true });
 
-  options = options || {};
+  var options0 = options || {};
+  options = {};
+  for (var key in options0) {
+    if (key !== 'rollup' && key !== 'allowRealFiles' && key !== 'impliedExtensions') {
+      options[key] = options0[key];
+    }
+  }
 
-  var wonderland = {};
-  var entries = [], haveSourcemaps;
+  var rollup = options0.rollup || require('rollup');
+  var allowRealFiles = options0.allowRealFiles;
+  var impliedExtensions = options0.impliedExtensions;
+
+  var wonderland = {}, vinylFiles = {};
+  var haveSourcemaps;
 
   var entryFiles = Promise.resolve(options.entry).then(function(entryFiles) {
     if (typeof entryFiles === 'string') {
@@ -56,57 +66,37 @@ function GulpRollup(options) {
     } else {
       wonderland[file.path] = file.contents.toString();
     }
-
-    // taking advantage of hypothetical's state-of-the-art resolving capabilities.
-    var onederland = {}; // ohoho, funny pun. I laugh.
-    onederland[file.path] = '';
-    var finder = hypothetical({ files: onederland, allowRealFiles: true });
-    // now let's see if this is an entry file.
-    entryFiles = entryFiles.then(function(entryFiles) {
-      entryFiles.forEach(function(entryFile, i) {
-        if (finder.resolveId(entryFile)) {
-          entries[i] = file;
-        }
-      });
-      return entryFiles;
-    });
+    vinylFiles[file.path] = file;
 
     cb();
   };
 
   self._flush = function(cb) {
+    if (!options.plugins) {
+      options.plugins = [];
+    } else if (!Array.isArray(options.plugins)) {
+      options.plugins = [options.plugins];
+    }
+    options.plugins = options.plugins.concat(hypothetical({
+      files: wonderland,
+      allowRealFiles: allowRealFiles,
+      impliedExtensions: impliedExtensions
+    }));
+
+    var vinylSystem = hypothetical({ files: vinylFiles, allowRealFiles: true, impliedExtensions: impliedExtensions });
+
     entryFiles.then(function(entryFiles) {
-      var rollup = options.rollup || require('rollup');
+      return Promise.all(entryFiles.map(function(entryFile) {
+        options.entry = entryFile;
 
-      return Promise.all(entryFiles.map(function(entryFile, i) {
-        // don't tamper with the original options. copy them over instead.
-        var adjustedOptions = {};
-        for (var key in options) {
-          if (key !== 'rollup' && key !== 'allowRealFiles') {
-            adjustedOptions[key] = options[key];
-          }
-        }
+        options.sourceMap = haveSourcemaps;
 
-        if (!adjustedOptions.plugins) {
-          adjustedOptions.plugins = [];
-        } else if (!Array.isArray(adjustedOptions.plugins)) {
-          adjustedOptions.plugins = [adjustedOptions.plugins];
-        }
-        adjustedOptions.plugins = adjustedOptions.plugins.concat(hypothetical({
-          files: wonderland,
-          allowRealFiles: options.allowRealFiles
-        }));
-
-        adjustedOptions.entry = entryFile;
-
-        adjustedOptions.sourceMap = haveSourcemaps;
-
-        return rollup.rollup(adjustedOptions).then(function(bundle) {
-          var result = bundle.generate(adjustedOptions);
+        return rollup.rollup(options).then(function(bundle) {
+          var result = bundle.generate(options);
 
           // get the corresponding entry Vinyl file to output with.
           // this makes file.history work. maybe expando properties too if you use them.
-          var file = entries[i];
+          var file = vinylSystem.load(vinylSystem.resolveId(entryFile));
           if (file === undefined) { // possible if options.allowRealFiles is true
             file = new File({
               path: entryFile,
