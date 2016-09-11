@@ -96,7 +96,10 @@ function GulpRollup(options) {
 
           // get the corresponding entry Vinyl file to output with.
           // this makes file.history work. maybe expando properties too if you use them.
-          var file = vinylSystem.load(vinylSystem.resolveId(entryFile));
+          var file = vinylSystem.resolveId(entryFile);
+          if (file !== undefined) {
+            file = vinylSystem.load(file);
+          }
           if (file === undefined) { // possible if options.allowRealFiles is true
             file = new File({
               path: entryFile,
