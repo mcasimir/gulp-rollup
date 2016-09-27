@@ -9,6 +9,7 @@ var File         = gutil.File;
 var Transform    = require('readable-stream').Transform;
 var hypothetical = require('rollup-plugin-hypothetical');
 var path         = require('path');
+var bufferFrom   = require('buffer-from');
 
 function GulpRollup(options) {
   var self = this;
@@ -103,10 +104,10 @@ function GulpRollup(options) {
           if (file === undefined) { // possible if options.allowRealFiles is true
             file = new File({
               path: entryFile,
-              contents: new Buffer(result.code)
+              contents: bufferFrom(result.code)
             });
           } else {
-            file.contents = new Buffer(result.code);
+            file.contents = bufferFrom(result.code);
           }
 
           var map = result.map;
