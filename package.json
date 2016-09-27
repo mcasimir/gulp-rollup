@@ -1,6 +1,6 @@
 {
   "name": "gulp-rollup",
-  "version": "2.5.0",
+  "version": "2.5.1",
   "description": "gulp plugin for Rollup ES6 module bundler",
   "main": "index.js",
   "scripts": {
@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/mcasimir/gulp-rollup",
   "dependencies": {
+    "buffer-from": "^0.1.0",
     "gulp-util": "^3.0.6",
     "readable-stream": "^2.1.4",
     "rollup": "^0.36.0",
