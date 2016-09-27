@@ -103,10 +103,10 @@ function GulpRollup(options) {
           if (file === undefined) { // possible if options.allowRealFiles is true
             file = new File({
               path: entryFile,
-              contents: new Buffer(result.code)
+              contents: process.version[1] < 6 ? new Buffer(result.code) : Buffer.from(result.code),
             });
           } else {
-            file.contents = new Buffer(result.code);
+            file.contents = process.version[1] < 6 ? new Buffer(result.code) : Buffer.from(result.code);
           }
 
           var map = result.map;
