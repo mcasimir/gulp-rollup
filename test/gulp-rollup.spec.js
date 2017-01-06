@@ -125,7 +125,7 @@ describe('gulp-rollup', function() {
     });
 
     it('should be thrown when passed no files', function(done) {
-      var stream = rollup({ entry: '/x' });
+      var stream = rollup({ entry: '/x', format: 'es' });
 
       expectError(/does not exist/, stream).then(done, done.fail);
 
@@ -133,7 +133,7 @@ describe('gulp-rollup', function() {
     });
 
     it('should be thrown when the entry does not exist', function(done) {
-      var stream = rollup({ entry: '/x' });
+      var stream = rollup({ entry: '/x', format: 'es' });
 
       expectError(/does not exist/, stream).then(done, done.fail);
 
@@ -145,7 +145,7 @@ describe('gulp-rollup', function() {
     });
 
     it('should be thrown when given null files', function(done) {
-      var stream = rollup({ entry: '/x' });
+      var stream = rollup({ entry: '/x', format: 'es' });
 
       expectError(/buffer/i, stream).then(done, done.fail);
 
@@ -156,7 +156,7 @@ describe('gulp-rollup', function() {
     });
 
     it('should be thrown when given streamed files', function(done) {
-      var stream = rollup({ entry: '/x' });
+      var stream = rollup({ entry: '/x', format: 'es' });
 
       expectError(/buffer/i, stream).then(done, done.fail);
 
@@ -168,7 +168,7 @@ describe('gulp-rollup', function() {
     });
 
     it('should be thrown when given mixed mapped and non-mapped files', function(done) {
-      var stream = rollup({ entry: '/x' });
+      var stream = rollup({ entry: '/x', format: 'es' });
 
       expectError(/sourcemap/i, stream).then(done, done.fail);
 
@@ -187,7 +187,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should simulate an entry file', function(done) {
-    var stream = rollup({ entry: '/x' });
+    var stream = rollup({ entry: '/x', format: 'es' });
 
     execute(stream, { key: 5 }).then(done, done.fail);
 
@@ -199,7 +199,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should simulate imported files', function(done) {
-    var stream = rollup({ entry: '/x' });
+    var stream = rollup({ entry: '/x', format: 'es' });
 
     execute(stream, { key: 5, key2: 6, key3: 'a' }).then(done, done.fail);
 
@@ -219,7 +219,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should handle out-of-order files', function(done) {
-    var stream = rollup({ entry: '/x' });
+    var stream = rollup({ entry: '/x', format: 'es' });
 
     execute(stream, { key: 5, key2: 6, key3: 'a' }).then(done, done.fail);
 
@@ -239,7 +239,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should reuse the entry file object for output', function(done) {
-    var stream = rollup({ entry: '/x' });
+    var stream = rollup({ entry: '/x', format: 'es' });
 
     var entry = new File({
       path: '/x',
@@ -266,7 +266,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should not add a sourcemap if the input lacks them', function(done) {
-    var stream = rollup({ entry: '/x' });
+    var stream = rollup({ entry: '/x', format: 'es' });
 
     wrap(stream).then(function(files) {
       assertLength1(files);
@@ -283,7 +283,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should replace the sourcemap if the input has them', function(done) {
-    var stream = rollup({ entry: '/x' });
+    var stream = rollup({ entry: '/x', format: 'es' });
 
     var x = new File({
       path: '/x',
@@ -312,7 +312,7 @@ describe('gulp-rollup', function() {
   });
 
   it('shouldn\'t break with a custom Rollup', function(done) {
-    var stream = rollup({ rollup: require('rollup'), entry: '/x' });
+    var stream = rollup({ rollup: require('rollup'), entry: '/x', format: 'es' });
 
     execute(stream, { key: 5 }).then(done, done.fail);
 
@@ -354,7 +354,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should forbid real files by default', function(done) {
-    var stream = rollup({ entry: resolve('x') });
+    var stream = rollup({ entry: resolve('x'), format: 'es' });
 
     expectError(/does not exist/, stream).then(done, done.fail);
 
@@ -366,7 +366,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should allow real files when options.allowRealFiles is true', function(done) {
-    var stream = rollup({ entry: resolve('x'), allowRealFiles: true });
+    var stream = rollup({ entry: resolve('x'), format: 'es', allowRealFiles: true });
 
     execute(stream, { key: 5, key4: 'value' }).then(done, done.fail);
 
@@ -378,7 +378,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should allow a real file as the entry when options.allowRealFiles is true', function(done) {
-    var stream = rollup({ entry: resolve('./fixtures/b.js'), allowRealFiles: true });
+    var stream = rollup({ entry: resolve('./fixtures/b.js'), format: 'es', allowRealFiles: true });
 
     execute(stream, { key: 5, key5: 'eulav' }).then(done, done.fail);
 
@@ -392,6 +392,7 @@ describe('gulp-rollup', function() {
   it('shouldn\'t interfere with transformer plugins', function(done) {
     var stream = rollup({
       entry: '/x',
+      format: 'es',
       plugins: string({ include: '/y' })
     });
 
@@ -411,6 +412,7 @@ describe('gulp-rollup', function() {
   it('shouldn\'t interfere with resolver/loader plugins', function(done) {
     var stream = rollup({
       entry: '/x',
+      format: 'es',
       plugins: hypothetical({
         files: {
           'where shall we have lunch?': 'object.key6 = "Milliways"'
@@ -430,7 +432,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should accept multiple entries', function(done) {
-    var stream = rollup({ entry: ['/x', '/y'] });
+    var stream = rollup({ entry: ['/x', '/y'], format: 'es' });
 
     executeAll(stream, {
       '/x': { key: 5 },
@@ -449,7 +451,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should roll up multiple entries', function(done) {
-    var stream = rollup({ entry: ['/z', '/x'] });
+    var stream = rollup({ entry: ['/z', '/x'], format: 'es' });
 
     executeAll(stream, {
       '/x': { key2: 6, key3: 7, key: 5 },
@@ -472,7 +474,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should accept a Promise as an entry', function(done) {
-    var stream = rollup({ entry: Promise.resolve('/x') });
+    var stream = rollup({ entry: Promise.resolve('/x'), format: 'es' });
 
     execute(stream, { key: 5 }).then(done, done.fail);
 
@@ -484,7 +486,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should accept multiple entries', function(done) {
-    var stream = rollup({ entry: Promise.resolve(['/x', '/y']) });
+    var stream = rollup({ entry: Promise.resolve(['/x', '/y']), format: 'es' });
 
     executeAll(stream, {
       '/x': { key: 5 },
@@ -508,7 +510,8 @@ describe('gulp-rollup', function() {
         setTimeout(function() {
           resolve('/x');
         }, 500);
-      })
+      }),
+      format: 'es'
     });
 
     execute(stream, { key: 5 }).then(done, done.fail);
@@ -521,7 +524,7 @@ describe('gulp-rollup', function() {
   });
 
   it('should pass on errors from the entry Promise', function(done) {
-    var stream = rollup({ entry: Promise.reject(new Error('oh NOOOOOO')) });
+    var stream = rollup({ entry: Promise.reject(new Error('oh NOOOOOO')), format: 'es' });
 
     expectError(/oh NOOOOOO/, stream).then(done, done.fail);
 
@@ -534,7 +537,8 @@ describe('gulp-rollup', function() {
 
   it('should add a .js extension if necessary by default', function(done) {
     var stream = rollup({
-      entry: '/x'
+      entry: '/x',
+      format: 'es'
     });
 
     execute(stream, { key: 5 }).then(done, done.fail);
@@ -549,6 +553,7 @@ describe('gulp-rollup', function() {
   it('should add extensions in options.impliedExtensions if necessary', function(done) {
     var stream = rollup({
       entry: '/x',
+      format: 'es',
       impliedExtensions: ['.lol', '.ha']
     });
 
@@ -568,6 +573,7 @@ describe('gulp-rollup', function() {
   it('shouldn\'t add any extensions if options.impliedExtensions is false', function(done) {
     var stream = rollup({
       entry: '/x',
+      format: 'es',
       impliedExtensions: false
     });
 

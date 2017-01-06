@@ -6,7 +6,6 @@ var SpecReporter  = require('jasmine-spec-reporter');
 var jshint        = require('gulp-jshint');
 var jscs          = require('gulp-jscs');
 var seq           = require('gulp-sequence');
-var depcheck      = require('gulp-depcheck');
 
 require('gulp-release-tasks')(gulp);
 
@@ -33,10 +32,4 @@ gulp.task('jshint', function() {
 
 gulp.task('lint', seq('jshint', 'jscs'));
 
-gulp.task('ci', seq('depcheck', 'lint', 'test'));
-
-gulp.task('depcheck', depcheck({
-  ignoreDirs: [
-    'fixtures'
-  ]
-}));
+gulp.task('ci', seq('lint', 'test'));
