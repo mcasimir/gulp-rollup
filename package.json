@@ -1,6 +1,6 @@
 {
   "name": "gulp-rollup",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "description": "gulp plugin for Rollup ES6 module bundler",
   "main": "index.js",
   "scripts": {
