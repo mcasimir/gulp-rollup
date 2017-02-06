@@ -637,4 +637,46 @@ describe('gulp-rollup', function() {
     }));
     stream.end();
   });
+
+  it('should provide appropriate caches when options.separateCaches is given', function(done) {
+    var caches = {
+      '/x': {},
+      '/y': {}
+    };
+
+    var stream = rollup({
+      entry: ['/x', '/y'],
+      separateCaches: caches,
+      format: 'es',
+      rollup: {
+        rollup: function(options) {
+          if (options.cache !== caches[options.entry]) {
+            throw new Error('Got incorrect cache for ' + options.entry + ' in rollup()!');
+          }
+
+          return Promise.resolve({
+            generate: function(options) {
+              if (options.cache !== caches[options.entry]) {
+                throw new Error('Got incorrect cache for ' + options.entry + ' in generate()!');
+              }
+
+              return { code: 'yay.' };
+            }
+          });
+        }
+      }
+    });
+
+    wrap(stream).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('x')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('y')
+    }));
+    stream.end();
+  });
 });

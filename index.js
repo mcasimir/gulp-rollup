@@ -11,22 +11,38 @@ var hypothetical = require('rollup-plugin-hypothetical');
 var path         = require('path');
 var bufferFrom   = require('buffer-from');
 
+function cloneWithBlacklist(obj) {
+  var out = {};
+
+  outer:
+  for (var key in obj) {
+    for (var i = 1; i < arguments.length; ++i) {
+      if (arguments[i] === key) {
+        continue outer;
+      }
+    }
+    out[key] = obj[key];
+  }
+
+  return out;
+}
+
 function GulpRollup(options) {
   var self = this;
 
   Transform.call(self, { objectMode: true });
 
   var options0 = options || {};
-  options = {};
-  for (var key in options0) {
-    if (key !== 'rollup' && key !== 'allowRealFiles' && key !== 'impliedExtensions') {
-      options[key] = options0[key];
-    }
-  }
+  options = cloneWithBlacklist(options0, 'rollup', 'allowRealFiles', 'impliedExtensions', 'separateCaches');
 
   var rollup = options0.rollup || require('rollup');
   var allowRealFiles = options0.allowRealFiles;
   var impliedExtensions = options0.impliedExtensions;
+
+  var separateCaches = options0.separateCaches;
+  if (separateCaches) {
+    separateCaches = cloneWithBlacklist(separateCaches);
+  }
 
   var wonderland = {}, vinylFiles = {};
   var haveSourcemaps;
@@ -84,13 +100,19 @@ function GulpRollup(options) {
       impliedExtensions: impliedExtensions
     }));
 
+    options.sourceMap = haveSourcemaps;
+
     var vinylSystem = hypothetical({ files: vinylFiles, allowRealFiles: true, impliedExtensions: impliedExtensions });
+
+    var options1 = options;
 
     entryFiles.then(function(entryFiles) {
       return Promise.all(entryFiles.map(function(entryFile) {
+        var options = cloneWithBlacklist(options1);
         options.entry = entryFile;
-
-        options.sourceMap = haveSourcemaps;
+        if (separateCaches) {
+          options.cache = separateCaches[entryFile];
+        }
 
         return rollup.rollup(options).then(function(bundle) {
           self.emit('bundle', entryFile, bundle);
