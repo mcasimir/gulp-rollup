@@ -606,7 +606,7 @@ describe('gulp-rollup', function() {
       var missing = [], nonObject = [], malformed = [];
       for (var i = 0; i < entries.length; ++i) {
         var name = entries[i], bundle = received[name];
-        if (!Object.hasOwnProperty.call(received, name)) {
+        if (!Object.prototype.hasOwnProperty.call(received, name)) {
           missing.push(name);
         } else if (typeof bundle !== 'object' || bundle === null) {
           nonObject.push(name);

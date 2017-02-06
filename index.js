@@ -145,7 +145,7 @@ function GulpRollup(options) {
             var modules = bundle.modules;
             for (var i = 0; i < modules.length; ++i) {
               var module = modules[i], id = module.id;
-              if (Object.hasOwnProperty.call(unifiedCachedModules, id)) {
+              if (Object.prototype.hasOwnProperty.call(unifiedCachedModules, id)) {
                 if (!deepEqual(module, unifiedCachedModules[id])) {
                   throw new Error('Conflicting caches for module "' + id + '"!');
                 }
