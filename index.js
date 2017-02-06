@@ -139,7 +139,7 @@ function GulpRollup(options) {
         }
 
         return rollup.rollup(options).then(function(bundle) {
-          self.emit('bundle', entryFile, bundle);
+          self.emit('bundle', bundle, entryFile);
 
           if (unifiedCachedModules) {
             var modules = bundle.modules;

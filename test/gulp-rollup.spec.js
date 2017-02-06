@@ -595,7 +595,7 @@ describe('gulp-rollup', function() {
     });
 
     var received = {};
-    stream.on('bundle', function(name, bundle) {
+    stream.on('bundle', function(bundle, name) {
       received[name] = bundle;
     });
 
