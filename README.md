@@ -54,6 +54,8 @@ In addition, a Promise that resolves to a string or array of strings can be pass
 
 ## Options
 
+### `options.rollup`
+
 In addition to [the standard Rollup options](https://github.com/rollup/rollup/wiki/JavaScript-API), gulp-rollup supports `options.rollup`, allowing you to use an older, newer, or custom version of Rollup by passing in the module like so:
 
 ``` js
@@ -65,9 +67,60 @@ gulp.src('./src/**/*.js')
   //...
 ```
 
+### `options.allowRealFiles`
+
 If `options.allowRealFiles` is set to true, gulp-rollup will break the gulp plugin guidelines just for you and allow Rollup to read files directly from the filesystem when a file with a matching name isn't found in the gulp stream. You could use this to weasel your way out of having to use rollup-stream, but that would make you a terrible person.
 
+### `options.impliedExtensions`
+
 By default, gulp-rollup will mimic Rollup by adding a .js extension to imports if necessary. You can customize this behavior by setting `options.impliedExtensions` to an array of extensions, like `['.js', '.es', '.jsx']`. If `options.impliedExtensions` is set to `false` or an empty array, file extensions in imports will be treated as mandatory.
+
+### `options.separateCaches`
+
+If `options.separateCaches` is supplied, it should be an object with property names corresponding to entry files. For each of those entry files, `options.cache` will be overridden with the corresponding property value. This is most useful in conjunction with the `'bundle'` event:
+
+```js
+var gulp       = require('gulp'),
+    rollup     = require('gulp-rollup');
+
+var caches = {};
+gulp.task('bundle', function() {
+  gulp.src('./src/**/*.js')
+    .pipe(rollup({
+      entry: ['./src/main1.js', './src/main2.js'],
+      separateCaches: caches
+    }))
+    .on('bundle', function(bundle, name) {
+      caches[name] = bundle;
+    })
+    .pipe(gulp.dest('./dist'));
+});
+```
+
+### `options.generateUnifiedCache`
+
+If `options.generateUnifiedCache` is set to true, gulp-rollup will try to construct a cache representing every file imported by any entry point, to be passed into future Rollup invocations (thus obviating the need for `options.separateCaches`) and deliver it via the `'unifiedcache'` event. This should always work as long as all of the plugins you use have deterministic output. Since the internal structure of Rollup's cache objects can't be expected to remain stable, this option isn't guaranteed to work if you specify an `options.rollup`.
+
+tl;dr: It works like this:
+
+```js
+var gulp       = require('gulp'),
+    rollup     = require('gulp-rollup');
+
+var cache;
+gulp.task('bundle', function() {
+  gulp.src('./src/**/*.js')
+    .pipe(rollup({
+      entry: ['./src/main1.js', './src/main2.js'],
+      cache: cache,
+      generateUnifiedCache: true
+    }))
+    .on('unifiedcache', function(unifiedCache) {
+      cache = unifiedCache;
+    })
+    .pipe(gulp.dest('./dist'));
+});
+```
 
 [npm-url]: https://npmjs.org/package/gulp-rollup
 [npm-image]: https://img.shields.io/npm/v/gulp-rollup.svg

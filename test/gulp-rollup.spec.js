@@ -585,4 +585,263 @@ describe('gulp-rollup', function() {
     }));
     stream.end();
   });
+
+  it('should emit a "bundle" event for each entry point', function(done) {
+    var entries = ['/x', '/y', '/z'];
+
+    var stream = rollup({
+      entry: entries,
+      format: 'es'
+    });
+
+    var received = {};
+    stream.on('bundle', function(bundle, name) {
+      received[name] = bundle;
+    });
+
+    wrap(stream).then(function(files) {
+      if (files.length !== 3) {
+        throw new Error('Expected 3 files, not ' + files.length + '!');
+      }
+      var missing = [], nonObject = [], malformed = [];
+      for (var i = 0; i < entries.length; ++i) {
+        var name = entries[i], bundle = received[name];
+        if (!Object.prototype.hasOwnProperty.call(received, name)) {
+          missing.push(name);
+        } else if (typeof bundle !== 'object' || bundle === null) {
+          nonObject.push(name);
+        } else if (!Array.isArray(bundle.modules)) {
+          malformed.push(name);
+        }
+      }
+      if (missing.length > 0) {
+        throw new Error('Entry points with missing bundles: ' + missing);
+      } else if (nonObject.length > 0) {
+        throw new Error('Entry points with non-object bundles: ' + nonObject);
+      } else if (malformed.length > 0) {
+        throw new Error('Entry points with missing bundle.modules: ' + malformed);
+      }
+    }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('import \'./y\'; object.key = 5;')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('import \'./z\'; object.key2 = true;')
+    }));
+    stream.write(new File({
+      path: '/z',
+      contents: new Buffer('object.key3 = {};')
+    }));
+    stream.end();
+  });
+
+  it('should provide appropriate caches when options.separateCaches is given', function(done) {
+    var caches = {
+      '/x': {},
+      '/y': {},
+      '/z': {}
+    };
+
+    var stream = rollup({
+      entry: ['/x', '/y', '/z'],
+      separateCaches: {
+        '/x': caches['/x'],
+        '/y': caches['/y']
+      },
+      cache: caches['/z'],
+      format: 'es',
+      rollup: {
+        rollup: function(options) {
+          if (options.cache !== caches[options.entry]) {
+            throw new Error('Got incorrect cache for ' + options.entry + ' in rollup()!');
+          }
+
+          return Promise.resolve({
+            generate: function(options) {
+              if (options.cache !== caches[options.entry]) {
+                throw new Error('Got incorrect cache for ' + options.entry + ' in generate()!');
+              }
+
+              return { code: 'yay.' };
+            }
+          });
+        }
+      }
+    });
+
+    wrap(stream).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('x')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('y')
+    }));
+    stream.write(new File({
+      path: '/z',
+      contents: new Buffer('z')
+    }));
+    stream.end();
+  });
+
+  it('should generate a usable unified cache if generateUnifiedCache is given', function(done) {
+    var cache;
+
+    var x = new File({
+      path: '/x',
+      contents: new Buffer('import "y"; import "z"; object.key = 7;')
+    });
+    var y = new File({
+      path: '/y',
+      contents: new Buffer('import "z"; import "w"; object.key2 = 0;')
+    });
+    var z = new File({
+      path: '/z',
+      contents: new Buffer('object.key3 = 1;')
+    });
+    var w = new File({
+      path: '/w',
+      contents: new Buffer('object.key4 = 3;')
+    });
+
+    var stream = rollup({
+      entry: ['/x', '/y'],
+      generateUnifiedCache: true,
+      plugins: {
+        resolveId: function(id) {
+          if (id.charAt(0) !== '/') {
+            id = '/' + id;
+          }
+          return '/' + id;
+        },
+        transform: function(source) {
+          return source.replace('key', 'kay');
+        }
+      },
+      format: 'es'
+    });
+
+    stream.on('unifiedcache', function(unifiedCache) {
+      cache = unifiedCache;
+    });
+
+    wrap(stream).then(function(files1) {
+      var stream = rollup({
+        entry: ['/x', '/y'],
+        cache: cache,
+        plugins: {
+          resolveId: function(id) {
+            return id;
+          },
+          transform: function(source) {
+            return source;
+          }
+        },
+        format: 'es'
+      });
+
+      var promise = wrap(stream).then(function(files2) {
+        function isTheRightFile(file) {
+          return file.path === file1.path;
+        }
+        for (var i = 0; i < files1.length; ++i) {
+          var file1 = files1[i], file2 = files2.filter(isTheRightFile)[0];
+          if (file1.contents.toString() !== file2.contents.toString()) {
+            throw new Error('Differing outputs for ' + file1.path + '!');
+          }
+        }
+      });
+
+      stream.write(x);
+      stream.write(y);
+      stream.write(z);
+      stream.write(w);
+      stream.end();
+
+      return promise;
+    }).then(done, done.fail);
+
+    stream.write(x);
+    stream.write(y);
+    stream.write(z);
+    stream.write(w);
+    stream.end();
+  });
+
+  it('should reject if cache outputs disagree on file contents', function(done) {
+    var callCount = 0;
+    var stream = rollup({
+      entry: ['/x', '/y'],
+      generateUnifiedCache: true,
+      plugins: {
+        transform: function(source) {
+          return source.replace('key', 'k' + (callCount++) + 'y');
+        }
+      },
+      format: 'es'
+    });
+
+    expectError(/conflicting caches/i, stream).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('import "./z"; object.key = 7;')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('import "./z"; object.key2 = 0;')
+    }));
+    stream.write(new File({
+      path: '/z',
+      contents: new Buffer('object.key3 = 1;')
+    }));
+    stream.end();
+  });
+
+  it('should reject if cache outputs disagree on resolved IDs', function(done) {
+    var callCount = 0;
+    var stream = rollup({
+      entry: ['/x', '/y'],
+      generateUnifiedCache: true,
+      plugins: {
+        resolveId: function(id) {
+          if (id === '/w') {
+            return id + (callCount++);
+          } else {
+            return id;
+          }
+        }
+      },
+      format: 'es'
+    });
+
+    expectError(/conflicting caches/i, stream).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('import "/z"; object.key = 7;')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('import "/z"; object.key2 = 0;')
+    }));
+    stream.write(new File({
+      path: '/z',
+      contents: new Buffer('import "/w"; object.key3 = 1;')
+    }));
+    stream.write(new File({
+      path: '/w0',
+      contents: new Buffer('object.key4 = 3;')
+    }));
+    stream.write(new File({
+      path: '/w1',
+      contents: new Buffer('object.key4 = 3;')
+    }));
+    stream.end();
+  });
 });
