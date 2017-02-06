@@ -54,6 +54,8 @@ In addition, a Promise that resolves to a string or array of strings can be pass
 
 ## Options
 
+### `options.rollup`
+
 In addition to [the standard Rollup options](https://github.com/rollup/rollup/wiki/JavaScript-API), gulp-rollup supports `options.rollup`, allowing you to use an older, newer, or custom version of Rollup by passing in the module like so:
 
 ``` js
@@ -65,7 +67,11 @@ gulp.src('./src/**/*.js')
   //...
 ```
 
+### `options.allowRealFiles`
+
 If `options.allowRealFiles` is set to true, gulp-rollup will break the gulp plugin guidelines just for you and allow Rollup to read files directly from the filesystem when a file with a matching name isn't found in the gulp stream. You could use this to weasel your way out of having to use rollup-stream, but that would make you a terrible person.
+
+### `options.impliedExtensions`
 
 By default, gulp-rollup will mimic Rollup by adding a .js extension to imports if necessary. You can customize this behavior by setting `options.impliedExtensions` to an array of extensions, like `['.js', '.es', '.jsx']`. If `options.impliedExtensions` is set to `false` or an empty array, file extensions in imports will be treated as mandatory.
 
