@@ -134,7 +134,7 @@ function GulpRollup(options) {
       return Promise.all(entryFiles.map(function(entryFile) {
         var options = cloneWithBlacklist(options1);
         options.entry = entryFile;
-        if (separateCaches) {
+        if (separateCaches && Object.prototype.hasOwnProperty.call(separateCaches, entryFile)) {
           options.cache = separateCaches[entryFile];
         }
 

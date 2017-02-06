@@ -641,12 +641,17 @@ describe('gulp-rollup', function() {
   it('should provide appropriate caches when options.separateCaches is given', function(done) {
     var caches = {
       '/x': {},
-      '/y': {}
+      '/y': {},
+      '/z': {}
     };
 
     var stream = rollup({
-      entry: ['/x', '/y'],
-      separateCaches: caches,
+      entry: ['/x', '/y', '/z'],
+      separateCaches: {
+        '/x': caches['/x'],
+        '/y': caches['/y']
+      },
+      cache: caches['/z'],
       format: 'es',
       rollup: {
         rollup: function(options) {
@@ -676,6 +681,10 @@ describe('gulp-rollup', function() {
     stream.write(new File({
       path: '/y',
       contents: new Buffer('y')
+    }));
+    stream.write(new File({
+      path: '/z',
+      contents: new Buffer('z')
     }));
     stream.end();
   });
