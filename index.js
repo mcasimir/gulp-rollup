@@ -93,6 +93,8 @@ function GulpRollup(options) {
         options.sourceMap = haveSourcemaps;
 
         return rollup.rollup(options).then(function(bundle) {
+          self.emit('bundle', entryFile, bundle);
+
           var result = bundle.generate(options);
 
           // get the corresponding entry Vinyl file to output with.

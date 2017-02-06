@@ -585,4 +585,56 @@ describe('gulp-rollup', function() {
     }));
     stream.end();
   });
+
+  it('should emit a "bundle" event for each entry point', function(done) {
+    var entries = ['/x', '/y', '/z'];
+
+    var stream = rollup({
+      entry: entries,
+      format: 'es'
+    });
+
+    var received = {};
+    stream.on('bundle', function(name, bundle) {
+      received[name] = bundle;
+    });
+
+    wrap(stream).then(function(files) {
+      if (files.length !== 3) {
+        throw new Error('Expected 3 files, not ' + files.length + '!');
+      }
+      var missing = [], nonObject = [], malformed = [];
+      for (var i = 0; i < entries.length; ++i) {
+        var name = entries[i], bundle = received[name];
+        if (!Object.hasOwnProperty.call(received, name)) {
+          missing.push(name);
+        } else if (typeof bundle !== 'object' || bundle === null) {
+          nonObject.push(name);
+        } else if (!Array.isArray(bundle.modules)) {
+          malformed.push(name);
+        }
+      }
+      if (missing.length > 0) {
+        throw new Error('Entry points with missing bundles: ' + missing);
+      } else if (nonObject.length > 0) {
+        throw new Error('Entry points with non-object bundles: ' + nonObject);
+      } else if (malformed.length > 0) {
+        throw new Error('Entry points with missing bundle.modules: ' + malformed);
+      }
+    }).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('import \'./y\'; object.key = 5;')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('import \'./z\'; object.key2 = true;')
+    }));
+    stream.write(new File({
+      path: '/z',
+      contents: new Buffer('object.key3 = {};')
+    }));
+    stream.end();
+  });
 });
