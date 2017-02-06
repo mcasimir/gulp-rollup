@@ -75,6 +75,53 @@ If `options.allowRealFiles` is set to true, gulp-rollup will break the gulp plug
 
 By default, gulp-rollup will mimic Rollup by adding a .js extension to imports if necessary. You can customize this behavior by setting `options.impliedExtensions` to an array of extensions, like `['.js', '.es', '.jsx']`. If `options.impliedExtensions` is set to `false` or an empty array, file extensions in imports will be treated as mandatory.
 
+### `options.separateCaches`
+
+If `options.separateCaches` is supplied, it should be an object with property names corresponding to entry files. For each of those entry files, `options.cache` will be overridden with the corresponding property value. This is most useful in conjunction with the `'bundle'` event:
+
+```js
+var gulp       = require('gulp'),
+    rollup     = require('gulp-rollup');
+
+var caches = {};
+gulp.task('bundle', function() {
+  gulp.src('./src/**/*.js')
+    .pipe(rollup({
+      entry: ['./src/main1.js', './src/main2.js'],
+      separateCaches: caches
+    }))
+    .on('bundle', function(bundle, name) {
+      caches[name] = bundle;
+    })
+    .pipe(gulp.dest('./dist'));
+});
+```
+
+### `options.generateUnifiedCache`
+
+If `options.generateUnifiedCache` is set to true, gulp-rollup will try to construct a cache representing every file imported by any entry point, to be passed into future Rollup invocations (thus obviating the need for `options.separateCaches`) and deliver it via the `'unifiedcache'` event. This should always work as long as all of the plugins you use have deterministic output. Since the internal structure of Rollup's cache objects can't be expected to remain stable, this option isn't guaranteed to work if you specify an `options.rollup`.
+
+tl;dr: It works like this:
+
+```js
+var gulp       = require('gulp'),
+    rollup     = require('gulp-rollup');
+
+var cache;
+gulp.task('bundle', function() {
+  gulp.src('./src/**/*.js')
+    .pipe(rollup({
+      entry: ['./src/main1.js', './src/main2.js'],
+      cache: cache,
+      generateUnifiedCache: true
+    }))
+    .on('unifiedcache', function(unifiedCache) {
+      cache = unifiedCache;
+    })
+    .pipe(gulp.dest('./dist'));
+});
+```
+
 [npm-url]: https://npmjs.org/package/gulp-rollup
 [npm-image]: https://img.shields.io/npm/v/gulp-rollup.svg
 [david-url]: https://david-dm.org/mcasimir/gulp-rollup
