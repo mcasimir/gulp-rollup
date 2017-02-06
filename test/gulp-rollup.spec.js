@@ -679,4 +679,160 @@ describe('gulp-rollup', function() {
     }));
     stream.end();
   });
+
+  it('should generate a usable unified cache if generateUnifiedCache is given', function(done) {
+    var cache;
+
+    var x = new File({
+      path: '/x',
+      contents: new Buffer('import "y"; import "z"; object.key = 7;')
+    });
+    var y = new File({
+      path: '/y',
+      contents: new Buffer('import "z"; import "w"; object.key2 = 0;')
+    });
+    var z = new File({
+      path: '/z',
+      contents: new Buffer('object.key3 = 1;')
+    });
+    var w = new File({
+      path: '/w',
+      contents: new Buffer('object.key4 = 3;')
+    });
+
+    var stream = rollup({
+      entry: ['/x', '/y'],
+      generateUnifiedCache: true,
+      plugins: {
+        resolveId: function(id) {
+          if (id.charAt(0) !== '/') {
+            id = '/' + id;
+          }
+          return '/' + id;
+        },
+        transform: function(source) {
+          return source.replace('key', 'kay');
+        }
+      },
+      format: 'es'
+    });
+
+    stream.on('unifiedcache', function(unifiedCache) {
+      cache = unifiedCache;
+    });
+
+    wrap(stream).then(function(files1) {
+      var stream = rollup({
+        entry: ['/x', '/y'],
+        cache: cache,
+        plugins: {
+          resolveId: function(id) {
+            return id;
+          },
+          transform: function(source) {
+            return source;
+          }
+        },
+        format: 'es'
+      });
+
+      var promise = wrap(stream).then(function(files2) {
+        function isTheRightFile(file) {
+          return file.path === file1.path;
+        }
+        for (var i = 0; i < files1.length; ++i) {
+          var file1 = files1[i], file2 = files2.filter(isTheRightFile)[0];
+          if (file1.contents.toString() !== file2.contents.toString()) {
+            throw new Error('Differing outputs for ' + file1.path + '!');
+          }
+        }
+      });
+
+      stream.write(x);
+      stream.write(y);
+      stream.write(z);
+      stream.write(w);
+      stream.end();
+
+      return promise;
+    }).then(done, done.fail);
+
+    stream.write(x);
+    stream.write(y);
+    stream.write(z);
+    stream.write(w);
+    stream.end();
+  });
+
+  it('should reject if cache outputs disagree on file contents', function(done) {
+    var callCount = 0;
+    var stream = rollup({
+      entry: ['/x', '/y'],
+      generateUnifiedCache: true,
+      plugins: {
+        transform: function(source) {
+          return source.replace('key', 'k' + (callCount++) + 'y');
+        }
+      },
+      format: 'es'
+    });
+
+    expectError(/conflicting caches/i, stream).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('import "./z"; object.key = 7;')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('import "./z"; object.key2 = 0;')
+    }));
+    stream.write(new File({
+      path: '/z',
+      contents: new Buffer('object.key3 = 1;')
+    }));
+    stream.end();
+  });
+
+  it('should reject if cache outputs disagree on resolved IDs', function(done) {
+    var callCount = 0;
+    var stream = rollup({
+      entry: ['/x', '/y'],
+      generateUnifiedCache: true,
+      plugins: {
+        resolveId: function(id) {
+          if (id === '/w') {
+            return id + (callCount++);
+          } else {
+            return id;
+          }
+        }
+      },
+      format: 'es'
+    });
+
+    expectError(/conflicting caches/i, stream).then(done, done.fail);
+
+    stream.write(new File({
+      path: '/x',
+      contents: new Buffer('import "/z"; object.key = 7;')
+    }));
+    stream.write(new File({
+      path: '/y',
+      contents: new Buffer('import "/z"; object.key2 = 0;')
+    }));
+    stream.write(new File({
+      path: '/z',
+      contents: new Buffer('import "/w"; object.key3 = 1;')
+    }));
+    stream.write(new File({
+      path: '/w0',
+      contents: new Buffer('object.key4 = 3;')
+    }));
+    stream.write(new File({
+      path: '/w1',
+      contents: new Buffer('object.key4 = 3;')
+    }));
+    stream.end();
+  });
 });

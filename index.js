@@ -27,17 +27,41 @@ function cloneWithBlacklist(obj) {
   return out;
 }
 
+function deepEqual(a, b) {
+  if (typeof a !== 'object' || typeof b !== 'object') {
+    return a === b;
+  }
+  var key;
+  for (key in a) {
+    if (!(key in b) || !deepEqual(a[key], b[key])) {
+      return false;
+    }
+  }
+  for (key in b) {
+    if (!(key in a)) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function GulpRollup(options) {
   var self = this;
 
   Transform.call(self, { objectMode: true });
 
   var options0 = options || {};
-  options = cloneWithBlacklist(options0, 'rollup', 'allowRealFiles', 'impliedExtensions', 'separateCaches');
+  options = cloneWithBlacklist(options0,
+                               'rollup',
+                               'allowRealFiles',
+                               'impliedExtensions',
+                               'separateCaches',
+                               'generateUnifiedCache');
 
   var rollup = options0.rollup || require('rollup');
   var allowRealFiles = options0.allowRealFiles;
   var impliedExtensions = options0.impliedExtensions;
+  var unifiedCachedModules = options0.generateUnifiedCache && {};
 
   var separateCaches = options0.separateCaches;
   if (separateCaches) {
@@ -117,6 +141,20 @@ function GulpRollup(options) {
         return rollup.rollup(options).then(function(bundle) {
           self.emit('bundle', entryFile, bundle);
 
+          if (unifiedCachedModules) {
+            var modules = bundle.modules;
+            for (var i = 0; i < modules.length; ++i) {
+              var module = modules[i], id = module.id;
+              if (Object.hasOwnProperty.call(unifiedCachedModules, id)) {
+                if (!deepEqual(module, unifiedCachedModules[id])) {
+                  throw new Error('Conflicting caches for module "' + id + '"!');
+                }
+              } else {
+                unifiedCachedModules[id] = module;
+              }
+            }
+          }
+
           var result = bundle.generate(options);
 
           // get the corresponding entry Vinyl file to output with.
@@ -149,6 +187,13 @@ function GulpRollup(options) {
         });
       }));
     }).then(function() {
+      if (unifiedCachedModules) {
+        var modules = [];
+        for (var id in unifiedCachedModules) {
+          modules.push(unifiedCachedModules[id]);
+        }
+        self.emit('unifiedcache', { modules: modules });
+      }
       cb(); // it's over!
     }).catch(function(err) {
       setImmediate(function() {
