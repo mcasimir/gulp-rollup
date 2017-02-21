@@ -128,12 +128,16 @@ function GulpRollup(options) {
 
     var vinylSystem = hypothetical({ files: vinylFiles, allowRealFiles: true, impliedExtensions: impliedExtensions });
 
-    var options1 = options;
+    var options1 = options,
+      moduleNames = options.moduleNames;
 
     entryFiles.then(function(entryFiles) {
-      return Promise.all(entryFiles.map(function(entryFile) {
+      return Promise.all(entryFiles.map(function(entryFile, index) {
         var options = cloneWithBlacklist(options1);
         options.entry = entryFile;
+        if (Array.isArray(moduleNames)) {
+          options.moduleName = moduleNames[index];
+        }
         if (separateCaches && Object.prototype.hasOwnProperty.call(separateCaches, entryFile)) {
           options.cache = separateCaches[entryFile];
         }
