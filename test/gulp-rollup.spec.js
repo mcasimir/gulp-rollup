@@ -335,7 +335,7 @@ describe('gulp-rollup', function() {
               if (options.entry !== 'en-tree?') {
                 throw new Error('Correct options were not passed to generate()!');
               }
-              return { code: 'ephemeral style' };
+              return Promise.resolve({ code: 'ephemeral style' });
             }
           });
         }
@@ -665,7 +665,7 @@ describe('gulp-rollup', function() {
                 throw new Error('Got incorrect cache for ' + options.entry + ' in generate()!');
               }
 
-              return { code: 'yay.' };
+              return Promise.resolve({ code: 'yay.' });
             }
           });
         }

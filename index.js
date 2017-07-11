@@ -155,8 +155,8 @@ function GulpRollup(options) {
             }
           }
 
-          var result = bundle.generate(options);
-
+          return bundle.generate(options);
+        }).then(function(result) {
           // get the corresponding entry Vinyl file to output with.
           // this makes file.history work. maybe expando properties too if you use them.
           var file = vinylSystem.resolveId(entryFile);
