@@ -71,18 +71,22 @@ function GulpRollup(options) {
   var wonderland = {}, vinylFiles = {};
   var haveSourcemaps;
 
-  var entryFiles = Promise.resolve(options.entry).then(function(entryFiles) {
+  var inputWasNamedEntry = Boolean(options.entry);
+  var inputName = inputWasNamedEntry ? 'options.entry' : 'options.input';
+  var entryFiles = Promise.resolve(
+    inputWasNamedEntry ? options.entry : options.input
+  ).then(function(entryFiles) {
     if (typeof entryFiles === 'string') {
       return [entryFiles];
     } else if (Array.isArray(entryFiles)) {
       if (entryFiles.some(function(entryFile) {
         return typeof entryFile !== 'string';
       })) {
-        throw new Error('options.entry must include only strings!');
+        throw new Error(inputName + ' must include only strings!');
       }
       return entryFiles;
     } else {
-      throw new Error('options.entry must be a string or array of strings!');
+      throw new Error(inputName + ' must be a string or array of strings!');
     }
   });
 
@@ -133,7 +137,11 @@ function GulpRollup(options) {
     entryFiles.then(function(entryFiles) {
       return Promise.all(entryFiles.map(function(entryFile) {
         var options = cloneWithBlacklist(options1);
-        options.entry = entryFile;
+        if (inputWasNamedEntry) {
+          options.entry = entryFile;
+        } else {
+          options.input = entryFile;
+        }
         if (separateCaches && Object.prototype.hasOwnProperty.call(separateCaches, entryFile)) {
           options.cache = separateCaches[entryFile];
         }

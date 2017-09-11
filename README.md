@@ -21,7 +21,7 @@ gulp.task('bundle', function() {
     // transform the files here.
     .pipe(rollup({
       // any option supported by Rollup can be set here.
-      entry: './src/main.js'
+      input: './src/main.js'
     }))
     .pipe(gulp.dest('./dist'));
 });
@@ -39,7 +39,7 @@ gulp.task('bundle', function() {
     .pipe(sourcemaps.init())
       // transform the files here.
       .pipe(rollup({
-        entry: './src/main.js'
+        input: './src/main.js'
       }))
     .pipe(sourcemaps.write())
     .pipe(gulp.dest('./dist'));
@@ -48,9 +48,9 @@ gulp.task('bundle', function() {
 
 ## Multiple entry points
 
-If an array of strings is passed into `options.entry`, a separate bundle will be rolled up from each entry point. They will be processed in parallel and output in no particular order. As usual, each bundle will have the same path as the associated entry file.
+If an array of strings is passed into `options.input`, a separate bundle will be rolled up from each entry point. They will be processed in parallel and output in no particular order. As usual, each bundle will have the same path as the associated entry file.
 
-In addition, a Promise that resolves to a string or array of strings can be passed into `options.entry`. This is to make it more convenient to use asynchronous methods to locate entry files.
+In addition, a Promise that resolves to a string or array of strings can be passed into `options.input`. This is to make it more convenient to use asynchronous methods to locate entry files.
 
 ## Options
 
@@ -62,7 +62,7 @@ In addition to [the standard Rollup options](https://github.com/rollup/rollup/wi
 gulp.src('./src/**/*.js')
   .pipe(rollup({
     rollup: require('rollup'),
-    entry: './src/main.js'
+    input: './src/main.js'
   }))
   //...
 ```
@@ -87,7 +87,7 @@ var caches = {};
 gulp.task('bundle', function() {
   gulp.src('./src/**/*.js')
     .pipe(rollup({
-      entry: ['./src/main1.js', './src/main2.js'],
+      input: ['./src/main1.js', './src/main2.js'],
       separateCaches: caches
     }))
     .on('bundle', function(bundle, name) {
@@ -111,7 +111,7 @@ var cache;
 gulp.task('bundle', function() {
   gulp.src('./src/**/*.js')
     .pipe(rollup({
-      entry: ['./src/main1.js', './src/main2.js'],
+      input: ['./src/main1.js', './src/main2.js'],
       cache: cache,
       generateUnifiedCache: true
     }))
