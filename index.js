@@ -128,7 +128,7 @@ function GulpRollup(options) {
       impliedExtensions: impliedExtensions
     }));
 
-    options.sourcemap = haveSourcemaps;
+    options.sourcemap = options.sourcemap || haveSourcemaps;
 
     var vinylSystem = hypothetical({ files: vinylFiles, allowRealFiles: true, impliedExtensions: impliedExtensions });
 
