@@ -3,9 +3,8 @@
 var PLUGIN_NAME = 'gulp-rollup';
 
 var util         = require('util');
-var gutil        = require('gulp-util');
-var PluginError  = gutil.PluginError;
-var File         = gutil.File;
+var PluginError  = require('plugin-error');
+var File         = require('vinyl');
 var Transform    = require('readable-stream').Transform;
 var hypothetical = require('rollup-plugin-hypothetical');
 var path         = require('path');
@@ -45,6 +44,15 @@ function deepEqual(a, b) {
   return true;
 }
 
+function deExternalizePath(path) {
+  if (/^(\.?\.?|[A-Za-z]:)\//.test(path)) {
+    return path;
+  } else {
+    // path is external
+    return './' + path;
+  }
+}
+
 function GulpRollup(options) {
   var self = this;
 
@@ -60,7 +68,14 @@ function GulpRollup(options) {
 
   var rollup = options0.rollup || require('rollup');
   var allowRealFiles = options0.allowRealFiles;
+
   var impliedExtensions = options0.impliedExtensions;
+  if (impliedExtensions === undefined) {
+    impliedExtensions = ['.js'];
+  } else if (impliedExtensions !== false && !Array.isArray(impliedExtensions)) {
+    throw new Error('options.impliedExtensions must be false, undefined, or an Array!');
+  }
+
   var unifiedCachedModules = options0.generateUnifiedCache && {};
 
   var separateCaches = options0.separateCaches;
@@ -103,15 +118,17 @@ function GulpRollup(options) {
       return cb();
     }
 
+    var nonExternalFilePath = deExternalizePath(file.path);
+
     if (haveSourcemaps) {
-      wonderland[file.path] = {
+      wonderland[nonExternalFilePath] = {
         code: file.contents.toString(),
         map:  file.sourceMap
       };
     } else {
-      wonderland[file.path] = file.contents.toString();
+      wonderland[nonExternalFilePath] = file.contents.toString();
     }
-    vinylFiles[file.path] = file;
+    vinylFiles[nonExternalFilePath] = file;
 
     cb();
   };
@@ -124,13 +141,17 @@ function GulpRollup(options) {
     }
     options.plugins = options.plugins.concat(hypothetical({
       files: wonderland,
-      allowRealFiles: allowRealFiles,
+      allowFallthrough: allowRealFiles,
       impliedExtensions: impliedExtensions
     }));
 
-    options.sourcemap = haveSourcemaps;
+    if (options.output) {
+      options.output.sourcemap = haveSourcemaps;
+    } else {
+      options.sourcemap = haveSourcemaps;
+    }
 
-    var vinylSystem = hypothetical({ files: vinylFiles, allowRealFiles: true, impliedExtensions: impliedExtensions });
+    var vinylSystem = hypothetical({ files: vinylFiles, allowFallthrough: true, impliedExtensions: impliedExtensions });
 
     var options1 = options;
 
