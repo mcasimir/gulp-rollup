@@ -25,9 +25,11 @@
   "dependencies": {
     "buffer-from": "^0.1.1",
     "gulp-util": "^3.0.8",
+    "plugin-error": "^1.0.0",
     "readable-stream": "^2.3.3",
     "rollup": "^0.54.1",
-    "rollup-plugin-hypothetical": "^2.0.0"
+    "rollup-plugin-hypothetical": "^2.0.0",
+    "vinyl": "^1.2.0"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
@@ -39,7 +41,6 @@
     "gulp-sequence": "^0.4.1",
     "jasmine-spec-reporter": "^2.4.0",
     "jshint": "^2.8.0",
-    "rollup-plugin-string": "^2.0.0",
-    "vinyl": "^1.1.1"
+    "rollup-plugin-string": "^2.0.0"
   }
 }

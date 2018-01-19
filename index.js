@@ -3,9 +3,8 @@
 var PLUGIN_NAME = 'gulp-rollup';
 
 var util         = require('util');
-var gutil        = require('gulp-util');
-var PluginError  = gutil.PluginError;
-var File         = gutil.File;
+var PluginError  = require('plugin-error');
+var File         = require('vinyl');
 var Transform    = require('readable-stream').Transform;
 var hypothetical = require('rollup-plugin-hypothetical');
 var path         = require('path');
