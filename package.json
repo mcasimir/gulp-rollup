@@ -29,7 +29,7 @@
     "readable-stream": "^2.3.3",
     "rollup": "^0.54.1",
     "rollup-plugin-hypothetical": "^2.0.0",
-    "vinyl": "^1.2.0"
+    "vinyl": "^2.1.0"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
