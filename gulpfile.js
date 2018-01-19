@@ -2,7 +2,7 @@
 
 var gulp          = require('gulp-help')(require('gulp'));
 var jasmine       = require('gulp-jasmine');
-var SpecReporter  = require('jasmine-spec-reporter');
+var SpecReporter  = require('jasmine-spec-reporter').SpecReporter;
 var jshint        = require('gulp-jshint');
 var jscs          = require('gulp-jscs');
 var seq           = require('gulp-sequence');
