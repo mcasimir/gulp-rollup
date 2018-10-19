@@ -23,17 +23,17 @@
   },
   "homepage": "https://github.com/mcasimir/gulp-rollup",
   "dependencies": {
-    "buffer-from": "^0.1.1",
+    "buffer-from": "^1.1.1",
     "plugin-error": "^1.0.0",
-    "readable-stream": "^2.3.3",
-    "rollup": "^0.54.1",
+    "readable-stream": "^3.0.6",
+    "rollup": "^0.66.6",
     "rollup-plugin-hypothetical": "^2.0.0",
     "vinyl": "^2.1.0"
   },
   "devDependencies": {
     "gulp": "^3.9.1",
     "gulp-help": "^1.6.1",
-    "gulp-jasmine": "^3.0.0",
+    "gulp-jasmine": "^4.0.0",
     "gulp-jscs": "^4.1.0",
     "gulp-jshint": "^2.1.0",
     "gulp-release-tasks": "0.0.3",
