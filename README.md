@@ -125,6 +125,6 @@ gulp.task('bundle', function() {
 [npm-url]: https://npmjs.org/package/gulp-rollup
 [npm-image]: https://img.shields.io/npm/v/gulp-rollup.svg
 [david-url]: https://david-dm.org/mcasimir/gulp-rollup
-[david-image]: https://david-dm.org/mcasimir/gulp-rollup
+[david-image]: https://david-dm.org/mcasimir/gulp-rollup/status.svg
 [travis-url]: https://travis-ci.org/mcasimir/gulp-rollup
 [travis-image]: https://img.shields.io/travis/mcasimir/gulp-rollup/master.svg
