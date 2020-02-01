@@ -26,7 +26,7 @@
     "buffer-from": "^0.1.1",
     "plugin-error": "^1.0.0",
     "readable-stream": "^2.3.3",
-    "rollup": "^0.54.1",
+    "rollup": "^0.68.2",
     "rollup-plugin-hypothetical": "^2.0.0",
     "vinyl": "^2.1.0"
   },
