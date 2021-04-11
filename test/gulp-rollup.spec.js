@@ -6,6 +6,7 @@ var Readable     = require('readable-stream').Readable;
 var path         = require('path');
 var string       = require('rollup-plugin-string');
 var hypothetical = require('rollup-plugin-hypothetical');
+const bufferFrom = require('buffer-from');
 
 function assertLength1(files) {
   if (files.length !== 1) {
@@ -149,7 +150,7 @@ describe('gulp-rollup', function() {
 
       stream.write(new File({
         path: '/not-x',
-        contents: new Buffer('')
+        contents: bufferFrom('')
       }));
       stream.end();
     });
@@ -178,7 +179,7 @@ describe('gulp-rollup', function() {
         }
       });
 
-      expectError(/buffer/i, stream).then(done, done.fail);
+      expectError(/Input files must be buffered!/i, stream).then(done, done.fail);
 
       stream.write(new File({
         path: '/x',
@@ -199,13 +200,13 @@ describe('gulp-rollup', function() {
 
       var mapped = new File({
         path: '/x',
-        contents: new Buffer('')
+        contents: bufferFrom('')
       });
       mapped.sourceMap = {};
       stream.write(mapped);
       stream.write(new File({
         path: '/y',
-        contents: new Buffer('')
+        contents: bufferFrom('')
       }));
       stream.end();
     });
@@ -223,7 +224,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('object.key = 5')
+      contents: bufferFrom('object.key = 5')
     }));
     stream.end();
   });
@@ -240,15 +241,15 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('import "./y"; object.key = 5')
+      contents: bufferFrom('import "./y"; object.key = 5')
     }));
     stream.write(new File({
       path: '/y',
-      contents: new Buffer('import "./z"; object.key2 = 6')
+      contents: bufferFrom('import "./z"; object.key2 = 6')
     }));
     stream.write(new File({
       path: '/z',
-      contents: new Buffer('object.key3 = "a"')
+      contents: bufferFrom('object.key3 = "a"')
     }));
     stream.end();
   });
@@ -265,15 +266,15 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/z',
-      contents: new Buffer('object.key3 = "a"')
+      contents: bufferFrom('object.key3 = "a"')
     }));
     stream.write(new File({
       path: '/y',
-      contents: new Buffer('import "./z"; object.key2 = 6')
+      contents: bufferFrom('import "./z"; object.key2 = 6')
     }));
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('import "./y"; object.key = 5')
+      contents: bufferFrom('import "./y"; object.key = 5')
     }));
     stream.end();
   });
@@ -288,7 +289,7 @@ describe('gulp-rollup', function() {
 
     var input = new File({
       path: '/x',
-      contents: new Buffer('import "./y"; object.key = 5')
+      contents: bufferFrom('import "./y"; object.key = 5')
     });
 
     wrap(stream).then(function(files) {
@@ -300,12 +301,12 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/z',
-      contents: new Buffer('object.key3 = "a"')
+      contents: bufferFrom('object.key3 = "a"')
     }));
     stream.write(input);
     stream.write(new File({
       path: '/y',
-      contents: new Buffer('import "./z"; object.key2 = 6')
+      contents: bufferFrom('import "./z"; object.key2 = 6')
     }));
     stream.end();
   });
@@ -327,7 +328,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('object.key = 5')
+      contents: bufferFrom('object.key = 5')
     }));
     stream.end();
   });
@@ -342,12 +343,12 @@ describe('gulp-rollup', function() {
 
     var x = new File({
       path: '/x',
-      contents: new Buffer('import "./y"; object.key = 5')
+      contents: bufferFrom('import "./y"; object.key = 5')
     });
     var map = x.sourceMap = { mappings: '' };
     var y = new File({
       path: '/y',
-      contents: new Buffer('object.key2 = 6')
+      contents: bufferFrom('object.key2 = 6')
     });
     y.sourceMap = { mappings: '' };
 
@@ -379,7 +380,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('object.key = 5')
+      contents: bufferFrom('object.key = 5')
     }));
     stream.end();
   });
@@ -396,7 +397,7 @@ describe('gulp-rollup', function() {
               if (options.input !== 'en-tree?') {
                 throw new Error('Correct options were not passed to generate()!');
               }
-              return Promise.resolve({ code: 'ephemeral style' });
+              return Promise.resolve({ output: [{ code: 'ephemeral style' }] });
             }
           });
         }
@@ -426,7 +427,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: resolve('x'),
-      contents: new Buffer('import "./fixures/a.js"; object.key = 5')
+      contents: bufferFrom('import "./fixures/a.js"; object.key = 5')
     }));
     stream.end();
   });
@@ -444,7 +445,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: resolve('x'),
-      contents: new Buffer('import "./fixtures/a.js"; object.key = 5')
+      contents: bufferFrom('import "./fixtures/a.js"; object.key = 5')
     }));
     stream.end();
   });
@@ -462,7 +463,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: resolve('x'),
-      contents: new Buffer('object.key = 5')
+      contents: bufferFrom('object.key = 5')
     }));
     stream.end();
   });
@@ -480,11 +481,11 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('import hey from "./y"; object.key = hey')
+      contents: bufferFrom('import hey from "./y"; object.key = hey')
     }));
     stream.write(new File({
       path: '/y',
-      contents: new Buffer('hey')
+      contents: bufferFrom('hey')
     }));
     stream.end();
   });
@@ -508,7 +509,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('import "where shall we have lunch?"; object.key = 5')
+      contents: bufferFrom('import "where shall we have lunch?"; object.key = 5')
     }));
     stream.end();
   });
@@ -528,11 +529,11 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('object.key = 5')
+      contents: bufferFrom('object.key = 5')
     }));
     stream.write(new File({
       path: '/y',
-      contents: new Buffer('object.key2 = 6')
+      contents: bufferFrom('object.key2 = 6')
     }));
     stream.end();
   });
@@ -552,15 +553,15 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('import "./y"; import "./z"; object.key = 5')
+      contents: bufferFrom('import "./y"; import "./z"; object.key = 5')
     }));
     stream.write(new File({
       path: '/y',
-      contents: new Buffer('object.key2 = 6')
+      contents: bufferFrom('object.key2 = 6')
     }));
     stream.write(new File({
       path: '/z',
-      contents: new Buffer('import "./y"; object.key3 = 7')
+      contents: bufferFrom('import "./y"; object.key3 = 7')
     }));
     stream.end();
   });
@@ -577,7 +578,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('object.key = 5')
+      contents: bufferFrom('object.key = 5')
     }));
     stream.end();
   });
@@ -597,11 +598,11 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('object.key = 5')
+      contents: bufferFrom('object.key = 5')
     }));
     stream.write(new File({
       path: '/y',
-      contents: new Buffer('object.key2 = 6')
+      contents: bufferFrom('object.key2 = 6')
     }));
     stream.end();
   });
@@ -622,7 +623,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('object.key = 5')
+      contents: bufferFrom('object.key = 5')
     }));
     stream.end();
   });
@@ -639,7 +640,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('object.key = 5')
+      contents: bufferFrom('object.key = 5')
     }));
     stream.end();
   });
@@ -656,7 +657,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x.js',
-      contents: new Buffer('object.key = 5')
+      contents: bufferFrom('object.key = 5')
     }));
     stream.end();
   });
@@ -674,11 +675,11 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x.lol',
-      contents: new Buffer('import \'./y\'; object.key = 5')
+      contents: bufferFrom('import \'./y\'; object.key = 5')
     }));
     stream.write(new File({
       path: '/y.ha',
-      contents: new Buffer('object.key2 = true')
+      contents: bufferFrom('object.key2 = true')
     }));
     stream.end();
   });
@@ -696,7 +697,7 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x.js',
-      contents: new Buffer('object.key = 5')
+      contents: bufferFrom('object.key = 5')
     }));
     stream.end();
   });
@@ -727,7 +728,7 @@ describe('gulp-rollup', function() {
           missing.push(name);
         } else if (typeof bundle !== 'object' || bundle === null) {
           nonObject.push(name);
-        } else if (!Array.isArray(bundle.modules)) {
+        } else if (!Array.isArray(bundle.cache.modules)) {
           malformed.push(name);
         }
       }
@@ -742,15 +743,15 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('import \'./y\'; object.key = 5;')
+      contents: bufferFrom('import \'./y\'; object.key = 5;')
     }));
     stream.write(new File({
       path: '/y',
-      contents: new Buffer('import \'./z\'; object.key2 = true;')
+      contents: bufferFrom('import \'./z\'; object.key2 = true;')
     }));
     stream.write(new File({
       path: '/z',
-      contents: new Buffer('object.key3 = {};')
+      contents: bufferFrom('object.key3 = {};')
     }));
     stream.end();
   });
@@ -784,7 +785,7 @@ describe('gulp-rollup', function() {
                 throw new Error('Got incorrect cache for ' + options.input + ' in generate()!');
               }
 
-              return Promise.resolve({ code: 'yay.' });
+              return Promise.resolve({ output: [{ code: 'yay.' }] });
             }
           });
         }
@@ -795,15 +796,15 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('x')
+      contents: bufferFrom('x')
     }));
     stream.write(new File({
       path: '/y',
-      contents: new Buffer('y')
+      contents: bufferFrom('y')
     }));
     stream.write(new File({
       path: '/z',
-      contents: new Buffer('z')
+      contents: bufferFrom('z')
     }));
     stream.end();
   });
@@ -813,19 +814,19 @@ describe('gulp-rollup', function() {
 
     var x = new File({
       path: '/x',
-      contents: new Buffer('import "y"; import "z"; object.key = 7;')
+      contents: bufferFrom('import "y"; import "z"; object.key = 7;')
     });
     var y = new File({
       path: '/y',
-      contents: new Buffer('import "z"; import "w"; object.key2 = 0;')
+      contents: bufferFrom('import "z"; import "w"; object.key2 = 0;')
     });
     var z = new File({
       path: '/z',
-      contents: new Buffer('object.key3 = 1;')
+      contents: bufferFrom('object.key3 = 1;')
     });
     var w = new File({
       path: '/w',
-      contents: new Buffer('object.key4 = 3;')
+      contents: bufferFrom('object.key4 = 3;')
     });
 
     var stream = rollup({
@@ -915,15 +916,15 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('import "./z"; object.key = 7;')
+      contents: bufferFrom('import "./z"; object.key = 7;')
     }));
     stream.write(new File({
       path: '/y',
-      contents: new Buffer('import "./z"; object.key2 = 0;')
+      contents: bufferFrom('import "./z"; object.key2 = 0;')
     }));
     stream.write(new File({
       path: '/z',
-      contents: new Buffer('object.key3 = 1;')
+      contents: bufferFrom('object.key3 = 1;')
     }));
     stream.end();
   });
@@ -951,23 +952,23 @@ describe('gulp-rollup', function() {
 
     stream.write(new File({
       path: '/x',
-      contents: new Buffer('import "/z"; object.key = 7;')
+      contents: bufferFrom('import "/z"; object.key = 7;')
     }));
     stream.write(new File({
       path: '/y',
-      contents: new Buffer('import "/z"; object.key2 = 0;')
+      contents: bufferFrom('import "/z"; object.key2 = 0;')
     }));
     stream.write(new File({
       path: '/z',
-      contents: new Buffer('import "/w"; object.key3 = 1;')
+      contents: bufferFrom('import "/w"; object.key3 = 1;')
     }));
     stream.write(new File({
       path: '/w0',
-      contents: new Buffer('object.key4 = 3;')
+      contents: bufferFrom('object.key4 = 3;')
     }));
     stream.write(new File({
       path: '/w1',
-      contents: new Buffer('object.key4 = 3;')
+      contents: bufferFrom('object.key4 = 3;')
     }));
     stream.end();
   });

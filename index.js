@@ -171,7 +171,7 @@ function GulpRollup(options) {
           self.emit('bundle', bundle, entryFile);
 
           if (unifiedCachedModules) {
-            var modules = bundle.modules;
+            var modules = bundle.cache.modules;
             for (var i = 0; i < modules.length; ++i) {
               var module = modules[i], id = module.id;
               if (Object.prototype.hasOwnProperty.call(unifiedCachedModules, id)) {
@@ -186,6 +186,7 @@ function GulpRollup(options) {
 
           return bundle.generate(options);
         }).then(function(result) {
+          const outputFile = result.output[0];
           // get the corresponding entry Vinyl file to output with.
           // this makes file.history work. maybe expando properties too if you use them.
           var file = vinylSystem.resolveId(entryFile);
@@ -195,13 +196,13 @@ function GulpRollup(options) {
           if (file === undefined) { // possible if options.allowRealFiles is true
             file = new File({
               path: entryFile,
-              contents: bufferFrom(result.code)
+              contents: bufferFrom(outputFile.code)
             });
           } else {
-            file.contents = bufferFrom(result.code);
+            file.contents = bufferFrom(outputFile.code);
           }
 
-          var map = result.map;
+          var map = outputFile.map;
           if (map) {
             // This makes sure the paths in the generated source map (file and
             // sources) are relative to file.base:
