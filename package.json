@@ -31,13 +31,10 @@
     "vinyl": "^2.1.0"
   },
   "devDependencies": {
-    "gulp": "^3.9.1",
-    "gulp-help": "^1.6.1",
+    "gulp": "^4.0.2",
     "gulp-jasmine": "^3.0.0",
     "gulp-jscs": "^4.1.0",
     "gulp-jshint": "^2.1.0",
-    "gulp-release-tasks": "0.0.3",
-    "gulp-sequence": "^1.0.0",
     "jasmine-spec-reporter": "^4.2.1",
     "jshint": "^2.9.5",
     "rollup-plugin-string": "^2.0.2"
