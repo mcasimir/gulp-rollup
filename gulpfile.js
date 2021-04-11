@@ -1,19 +1,16 @@
 'use strict';
 
-var gulp          = require('gulp-help')(require('gulp'));
+var gulp          = require('gulp');
 var jasmine       = require('gulp-jasmine');
 var SpecReporter  = require('jasmine-spec-reporter').SpecReporter;
 var jshint        = require('gulp-jshint');
 var jscs          = require('gulp-jscs');
-var seq           = require('gulp-sequence');
-
-require('gulp-release-tasks')(gulp);
 
 gulp.task('test', function () {
   return gulp.src(['test/**/*.spec.js'])
-        .pipe(jasmine({
-          reporter: new SpecReporter()
-        }));
+    .pipe(jasmine({
+      reporter: new SpecReporter()
+    }));
 });
 
 gulp.task('jscs', function() {
@@ -30,6 +27,6 @@ gulp.task('jshint', function() {
     .pipe(jshint.reporter('fail'));
 });
 
-gulp.task('lint', seq('jshint', 'jscs'));
+gulp.task('lint', gulp.series('jshint', 'jscs'));
 
-gulp.task('ci', seq('lint', 'test'));
+gulp.task('ci', gulp.series('lint', 'test'));
