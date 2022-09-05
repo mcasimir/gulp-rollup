@@ -198,7 +198,7 @@ function GulpRollup(options) {
               contents: bufferFrom(result.code)
             });
           } else {
-            file.contents = bufferFrom(result.code);
+            file.contents = bufferFrom(result.code || result.output[0].code);
           }
 
           var map = result.map;
